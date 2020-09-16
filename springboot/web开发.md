@@ -363,4 +363,151 @@ CRUD-员工列表
    ~{templatename::fragmentname} ：模板名::片段名
    ```
 
+
+---
+
+### springboot默认的错误处理机制
+
+默认效果：返回一个默认的错误页面
+
+![1600216866804](C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1600216866804.png)
+
+如果是其他客户端，默认响应一个json数据
+
+![1600216962135](C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1600216962135.png)
+
+原理：可以参照ErrorMvcAutoConfiguration：错误处理的自动配置
+
+给容器中添加了以下组件
+
+1. DefaultErrorAttributes
+
+2. BasicErrorController：默认处理/error请求
+
+   ```java
+   @Controller
+   @RequestMapping("${server.error.path:${error.path:/error}}")
+   public class BasicErrorController extends AbstractErrorController{}
+   ```
+
+3. ErrorPageCustomizer
+
+   ```java
+   @Value("${error/path:/error}")
+   private String path  = "/error" 系统出现错误以后来到error请求进行处理（web.xml注册的错误页面规则）
+   ```
+
+4. DefaultErrorViewResolver
+
+   步骤：一旦系统出现4XX或者5XX之类的错误：ErrorPageCustomizer就会生效（定制错误的响应规则）；就会来到/error请求，就会被**BaseErrorController**处理
+
+   1. 响应页面：去哪个页面是由DefaultErrorViewResolver决定的
+
+   ```java
+   	@Override
+   	public ModelAndView resolveErrorView(HttpServletRequest request, HttpStatus status, Map<String, Object> model) {
+   		ModelAndView modelAndView = resolve(String.valueOf(status.value()), model);
+   		if (modelAndView == null && SERIES_VIEWS.containsKey(status.series())) {
+   			modelAndView = resolve(SERIES_VIEWS.get(status.series()), model);
+   		}
+   		return modelAndView;
+   	}
    
+   	private ModelAndView resolve(String viewName, Map<String, Object> model) {
+   		//默认springboot可以去找到一个页面，error/404
+           String errorViewName = "error/" + viewName;
+           //模板引擎可以解析这个页面地址就用模板引擎解析
+   		TemplateAvailabilityProvider provider = this.templateAvailabilityProviders.getProvider(errorViewName,
+   				this.applicationContext);
+   		if (provider != null) {
+               //模板引擎可用的情况下返回到errorViewName指定的视图地址
+   			return new ModelAndView(errorViewName, model);
+   		}
+           //模板引擎不可用，就在静态资源文件夹下找errorViewName对应的页面 error/404.html
+   		return resolveResource(errorViewName, model);
+   	}
+   ```
+
+   2. 如何定制错误响应页面
+
+      1. 如何定制错误的页面：
+
+         1. 有模板引擎的情况下：error/状态码；将错误页面命名为  错误状态码.html放在模板引擎文件夹里面的error文件夹下，发生此状态码的错误就会来到对应的页面
+
+            我们可以使用4XX和5XX作为错误页面的文件名来匹配这种类型的所有错误，精确优先（优先寻找精确的状态码.html)
+
+            页面能获取的信息：
+
+            ​	timestamp：时间戳
+
+            ​	status：状态码
+
+            ​	error：错误提示
+
+            ​	message：异常消息
+
+            ​	errors：JSR303数据校验的错误都在这里
+
+         2. 没有模板引擎（模板引擎找不到这个错误页面）静态资源文件夹下找
+
+         3. 以上都没有错误页面，就是默认来到SpringBoot默认的错误提示页面
+
+      2. 如何定制错误的json数据
+
+         1. 自定义异常处理&返回定制json数据
+
+            ```java
+            @ControllerAdvice
+            public class MyExceptionHandler {
+                @ResponseBody
+                @ExceptionHandler(Exception.class)
+                public Map<String, Object> handleException(Exception e){
+                    Map<String, Object> errors = new HashMap<>();
+                    errors.put("code", "user.notexist");
+                    errors.put("message", e.getMessage());
+                    return errors;
+                }
+            }
+            //没有自适应效果
+            ```
+
+         2. 转发到/error进行自适应响应效果处理
+
+            ```java
+            @ControllerAdvice
+            public class MyExceptionHandler {
+                @ExceptionHandler(Exception.class)
+                public String handleException(Exception e, HttpServletRequest request){
+                    Map<String, Object> errors = new HashMap<>();
+            
+                    //传入我们自己的错误状态码 4XX、5XX
+                    request.setAttribute("javax.servlet.error.status_code", 400);
+                    errors.put("code", "user.notexist");
+                    errors.put("message", e.getMessage());
+                    return "forward:/error";
+                }
+            }
+            ```
+
+         3. 将我们要定制的数据携带出去
+
+            出现错误以后，回来到/error请求。会被BasicErrorController处理，响应出去可以获取的数据是由getErrorAttributes得到的（是AbstractErrorController（ErrorController）规定的方法）
+
+            1. 完全来编写一个ErrorController的实现类【或者是编写AbstractErrorController的子类】放在容器中
+            2. 页面上能用的数据，或者是json返回能用的数据都是通过ErrorAttribute.getErrorAttributes得到的，容器中DefaultErrorAttributes.getErrorAttributes()默认进行数据处理的
+
+            自定义ErrorAttribute
+
+            ```java
+            @Component
+            public class MyErrorAttribute extends DefaultErrorAttributes {
+                @Override
+                public Map<String, Object> getErrorAttributes(WebRequest webRequest, ErrorAttributeOptions options) {
+                    Map<String, Object> map = super.getErrorAttributes(webRequest, options);
+                    map.put("company", "jxau");
+                    return map;
+                }
+            }
+            ```
+
+            
