@@ -239,6 +239,7 @@ springboot对SpringMVC的自动配置都不需要了，所有都是我们自己�
 
 1. springboot在自动配置很多组件的时候，先看容器中有没有用户自己配置的(@Bean、@Conponent) 如果有就用用户的配置，如果没有，才自动配置；如果有些组件可以有多个（ViewResolver）将用户配置的和自己默认的组合起来
 2. 在springboot中会有非常多的xxxConfigurer帮助我们进行扩展配置
+3. 在springboot中会有很多的xxxCustomizer帮助我们进行定制配置
 
 ---
 
@@ -362,7 +363,6 @@ CRUD-员工列表
    ~{templatename::selector} : 模板名：：选择器
    ~{templatename::fragmentname} ：模板名::片段名
    ```
-
 
 ---
 

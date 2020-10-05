@@ -170,7 +170,7 @@ id:这个对象的唯一标识
 通过p名称空间为bean赋值名称空间
 
 ```xml
-<bean id="person07" class="com.xxxx.bean.Person"p:age="07" p:name="elias07" p:email="elias@hl.com" p:gender="man"/>
+<bean id="person07" class="com.xxxx.bean.Person" p:age="07" p:name="elias07" p:email="elias@hl.com" p:gender="man"/>
 ```
 
 ----
@@ -308,7 +308,7 @@ id:这个对象的唯一标识
 <bean id="person08" class="com.jxau.bean.Person" abstract="true"></bean>
 ```
 
-但是parent : 指定当前bean的配置信息继承哪个
+parent : 指定当前bean的配置信息继承哪个
 
 ```xml
 <bean id="person09" class="com.jxau.bean.Person" parent="person08">
@@ -415,11 +415,6 @@ scope="prototype"/>
 ```
 
 ```java
-package com.jxau.bean;
-
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanPostProcessor;
-
 public class MyBeanPostProcession implements BeanPostProcessor {
     /**
      *初始化之前调用
@@ -492,7 +487,7 @@ public class MyBeanPostProcession implements BeanPostProcessor {
         autowire="byName" 按照名字
                 private Car car;
                 以属性名（car）作为id去容器中找到这个组件，给他赋值，如果找不到，就赋值为null
-                car = ioc。getBean("car");
+                car = ioc.getBean("car");
 
         autowire="byType" 按照类型
                 private Car car;
@@ -559,13 +554,13 @@ public class MyBeanPostProcession implements BeanPostProcessor {
     @Repository: 给数据库层（持久化层，dao层）的组件添加这个注解
     @Component：给不属于以上几层的组件添加这个注解
 
-    注解是可以随便加的：spring底层不回去验证你这个组件
+   (@Service, @Repository, @Component) 注解是可以随便加的：spring底层不回去验证你这个组件
     推荐各自层加各自注解，给程序员看
 
     使用注解将组件快速的加入到容器中需要几步
     1、要添加的组件上标四个注解的任何一个
     2、告诉spring，自动扫描加了注解的组件；依赖context名称空间
-    3、一定要导入aop包，支持支持加注解模式的：spring-aop。。。
+    3、一定要导入aop包，支持支持加注解模式的：spring-aop...
     -->
  <!--   <context:component-scan base-package="com.jxau">
 
@@ -582,11 +577,11 @@ public class MyBeanPostProcession implements BeanPostProcessor {
 	<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
 -->
 
-    <!--<context:component-scan base-package="com.jxau" use-default-filters="false">-->
-        <!--只扫描进入哪些组件：默认都是全部扫描进来-->
-            <!--一定要禁用掉默认的过滤规则才行；use-default-filter="false"-->
-        <!--<context:include-filter type="annotation" expression="org.springframework.stereotype.Service"></context:include-filter>-->
-    <!--</context:component-scan>-->
+    <!--<context:component-scan base-package="com.jxau" use-default-filters="false">
+       		//只扫描进入哪些组件：默认都是全部扫描进来
+            //一定要禁用掉默认的过滤规则才行；use-default-filter="false"
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Service"></context:include-filter>
+    </context:component-scan>-->
     <context:component-scan base-package="com.jxau"></context:component-scan>
 ```
 

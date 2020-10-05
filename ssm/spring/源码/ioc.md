@@ -40,7 +40,7 @@ public ClassPathXmlApplicationContext(String[] configLocations, boolean refresh,
 public void refresh() throws BeansException, IllegalStateException {
         synchronized(this.startupShutdownMonitor) {
             this.prepareRefresh();
-            //spring解析xml配置文件将要创建的所有bean的配置星系保存起来
+            //spring解析xml配置文件将要创建的所有bean的配置信息保存起来
             ConfigurableListableBeanFactory beanFactory = this.obtainFreshBeanFactory();
             this.prepareBeanFactory(beanFactory);
 
@@ -428,7 +428,7 @@ ApplicationContext是BeanFacroty的子接口
 
 BeanFactory：bean工厂接口；负责创建bean实例；容器里面保存的所有单例bean其实是一个map
 
-​					他是spring最底层的杰阔
+​					他是spring最底层的接口
 
 ApplicationContext：是容器接口；更多的负责同期功能的实现（可以基于beanFactory创建好的对象之上完成强大的容器）
 
