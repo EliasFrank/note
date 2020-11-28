@@ -407,7 +407,7 @@ public class MyFactoryBean implements FactoryBean<Airplane> {
         1. 单例bean，容器创建的时候就会创建好，容器关闭也会销毁创建的bean
         2. 多实例bean，获取的时候才会创建
         我们可以为bean自定义一些生命周期方法；spring在创建或者销毁的时候就会调用指定的方法
-            自定义初始化方法和销毁方法，而且必须是无参的
+        自定义初始化方法和销毁方法，而且必须是无参的
 -->
 <bean id="book01" class="com.jxau.bean.Book"
       init-method="myInit" destroy-method="myDestroy"
@@ -563,7 +563,6 @@ public class MyBeanPostProcession implements BeanPostProcessor {
     3、一定要导入aop包，支持支持加注解模式的：spring-aop...
     -->
  <!--   <context:component-scan base-package="com.jxau">
-
         使用context:exclude-filter指定扫描包时不包含的类
         扫描的时候，可以排除一些不要的组件
             type="annotation"：指定排除规则，按照注解进行排除，标注指定注解的组件不要
@@ -618,5 +617,5 @@ public class MyBeanPostProcession implements BeanPostProcessor {
                 @Autowired：最强大，因为是spring自己的注解
                 @Resource：j2ee，是java的标准
                 @Inject：EJB
-            @Resource拓展性强，因为是java标准，如果切换陈另外一个容器框架，@Resource还是可以使用的，而@Auto就不行
+            @Resource拓展性强，因为是java标准，如果切换陈另外一个容器框架，@Resource还是可以使用的，而@Autowire就不行
 

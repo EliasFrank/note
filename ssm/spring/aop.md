@@ -33,7 +33,7 @@ OOP ：(Object Oriented Programming)
 **动态代理**：
 
 1. 有了动态代理，日志记录可以做的非常抢到，而且与业务逻辑解耦
-2. jdk默认的动态代理，如果目标对象没有实现任何借口，是无法为他创建代理对象的。
+2. jdk默认的动态代理，如果目标对象没有实现任何接口，是无法为他创建代理对象的。
 3. 难写
 
 spring实现了aop功能，底层就是动态代理
@@ -82,7 +82,7 @@ spring实现了aop功能，底层就是动态代理
 
    3. 只能匹配一层路径
 
-   4. 权限位置*不能，权限位置不写就默认为任何权限；public [可选]
+   4. 权限位置*不能写，权限位置不写就默认为任何权限；public [可选]
 
 .. :
 
@@ -98,7 +98,7 @@ spring实现了aop功能，底层就是动态代理
 
 1. 最精确的
 
-   execution(publiv int com.jxay.imp.Caculator.add(int, int))
+   execution(public int com.jxay.imp.Caculator.add(int, int))
 
 2. 最模糊的
 
@@ -134,7 +134,7 @@ spring实现了aop功能，底层就是动态代理
 
 3. 唯一要求就是方法的参数列表一定不能乱写
 
-   通知方法是spring利用发射调用的， 每次方法调用得确定这个方法的参数表的值
+   通知方法是spring利用反射调用的， 每次方法调用得确定这个方法的参数表的值
 
    参数表上的每一个参数，spring都得知道是什么
 
@@ -155,11 +155,11 @@ try{
 ```
 
 五个通知注解
- @Before 在目标方法之前运行                           前置通知
-@After 在目标方法之后运行                               后置通知
+ @Before 在目标方法之前运行                         前置通知
+@After 在目标方法之后运行                             后置通知
 @AfterReturning 在目标方法正常返回之后      返回通知
 @AfterThrowing 在目标方法抛出异常之后       异常通知
-@Around 环绕                                                     环绕通知
+@Around 环绕                                                   环绕通知
 
 需要在注解里面写上切入点表达式
 execution(访问权限符  返回值类型  方法签名)
