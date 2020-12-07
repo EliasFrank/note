@@ -1,7 +1,7 @@
 **REST**
 
-* REST: 即Tepreesenttional State Transfer。（资源）表现层状态转化。是目前最流行的一种互联网软件架构。他结构其你清晰，符合标准，易于理解，扩展方便，所以正得到越来越多网站的采用。
-* 资源（Resource）：网络上的一个实体，或者说是网络上的一个具体信息。他可以是一段文本、一张蹄片、一首歌曲、一种服务，总之，就是一个具体的存在。可以用一个URI（统一资源定位符）指向他，每种资源对应一个特定的URI。要获取这个资源，访问他的URI就可以，因此URI即为每一个资源的独一无二的识别符
+* REST: 即Tepreesenttional State Transfer。（资源）表现层状态转化。是目前最流行的一种互联网软件架构。他结构清晰，符合标准，易于理解，扩展方便，所以正得到越来越多网站的采用。
+* 资源（Resource）：网络上的一个实体，或者说是网络上的一个具体信息。他可以是一段文本、一张图片、一首歌曲、一种服务，总之，就是一个具体的存在。可以用一个URI（统一资源定位符）指向他，每种资源对应一个特定的URI。要获取这个资源，访问他的URI就可以，因此URI即为每一个资源的独一无二的识别符
 * 表现层（Representation）：把资源具体呈现出来的形式，叫做他的表现层。比如，文本可以用txt格式表现，也可以用HTML格式、XML格式、JSON格式表现，甚至可以采用二进制格式。
 * 状态转化（State Transfer）：每发出一个请求，就代表了客户端和服务器的一次交互过程，HTTP协议，是一个无状态协议，即所有的状态都保存在服务器端。因此，如果客户端想要擦操作服务武器，必须通过某种手段，让服务器端发生“状态转化”。而这种转化是建立在表现层之上的，所以就是“表现层状态转化“。具体说：HTTP协议里面，四个表示操作方式的动词：GET, POST, PUT, DELETE。他们分别对应四种基本操作：get用来获取资源，post用来新建资源，put用来更新资源，delete用来删除资源
 
@@ -35,7 +35,7 @@ rest推荐：
 
 **从页面发起PUT、DELETE形式的请求，SpringMVC提供了对Rest风格的支持**
 
-1. SpringMVC中有一个Filter，他可以吧普通的请求转化为规定形式的请求，首先需要配置这个filter
+1. SpringMVC中有一个Filter，他可以把普通的请求转化为规定形式的请求，首先需要配置这个filter
 
    ```xml
    <filter>
@@ -47,8 +47,6 @@ rest推荐：
        <url-pattern>/*</url-pattern>
      </filter-mapping>
    ```
-
-   
 
 2. 建立一个post类型的表单， 表单中携带一个\_method参数，这个\_method的值就是DELETE、PUT
 
@@ -74,22 +72,22 @@ SpringMVC如何获取请求带来的各种信息
 
 @RequestParam
 
-```huoq
+```
 获取请求参数的，参数默认是必须带的
 @RequestParam("user")String name
-name = request.getParameter("user");
+相当于name = request.getParameter("user");
 
 value ，required ， defaultValue 注解有三个参数可以选择
 
 @ReqeustVariable("id")
-获取的时路径中的值而不是参数值
+获取的是路径中的值而不是参数值
 ```
 
 @RequestHeader
 
 ```
-@RequestHeader(value = "User-Agent")String user_agent
-user_agent = request.getHeader("User-Agent")
+@RequestHeader(value = "User-Agent") String user_agent
+相当于user_agent = request.getHeader("User-Agent")
 如果请求头中没有这个值就会报错
 
 value ，required ， defaultValue 注解有三个参数可以选择
@@ -100,6 +98,7 @@ value ，required ， defaultValue 注解有三个参数可以选择
 
 ```
 @CookieValue(value = "JSESSIONID")String jid
+相当于：
 Cookie[] cookies = request.getCookie();
 for(Cookie c : cookies){
 	if(c.getName.equals("JSESSIONID"))
@@ -137,16 +136,3 @@ request.setCharacterrEncoding("UTF-8");
 ```
 
 ​		自己写一个filter：SpringMVC有这个filter
-
-
-
-
-
-
-
-
-
-
-
-
-

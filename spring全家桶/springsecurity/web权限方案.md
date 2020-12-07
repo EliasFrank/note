@@ -164,7 +164,7 @@
         spring.datasource.url=jdbc:mysql://localhost:3306/jdbc_test?serverTimezone=UTC 
         ```
 
-### 自定义设置登录界面
+### 自定义界面
 
 不需要认证可以访问
 
@@ -186,4 +186,180 @@
 
 2. 编写登录界面和controller
 
+```java
+http.exceptionHandling().accessDeniedPage("/unauth.html");//自定义权限提醒界面
+```
+
+
+
 ### 基于角色或权限进行访问控制
+
+#### hasAuthority
+
+如果当前的主体具有指定的权限，则返回true，否则放回false
+
+步骤：
+
+1.  在配置类设置当前访问地址有哪些权限
+
+    ```java
+    //当前登录用户，只有具有admin权限才可以访问这个路径
+    .antMatchers("/test/index").hasAuthority("admin")
+    ```
+
+2. 在UserDetailsService，把返回User对象设置权限
+
+    ```java
+    List<GrantedAuthority> roles =
+                    AuthorityUtils.commaSeparatedStringToAuthorityList("admin");
+    //如果有多个权限，则用,进行分隔，系统对其处理时会将字符串进行切割
+    ```
+
+#### hasAnyAuthority
+
+如果当前的主体有任何提供的角色（给定的作为一个逗号分隔的字符串列表）的话，返回true
+
+在配置类设置当前访问地址有哪些权限
+
+```java
+//当前登录用户，具有admin或者manager权限都可以访问这个路径
+.antMatchers("/test/index").hasAnyAuthority("admin, manager")
+```
+
+#### hasRole
+
+如果用户具备给定角色就允许访问，否则出现403
+
+如果当前主体具有指定的角色，则返回true
+
+```java
+.antMatchers("/test/index").hasRole("sale")
+List<GrantedAuthority> roles = AuthorityUtils.commaSeparatedStringToAuthorityList("admin, ROLE_sale");
+```
+
+#### hasAnyRole
+
+表示用户具备任何一个条件都可以访问
+
+```java
+.antMatchers("/test/index").hasRole("sale, man")
+```
+
+### 注解
+
+==@Secured==
+
+用户具有某个角色，可以访问方法
+
+1. 启动类（配置类）上开启注解
+
+    ```java
+    @EnableGlobalMethodSecurity(securedEnabled = true)
+    public class SecurityDemo1Application {
+    ```
+
+2. 在controller的方法上面使用注解，设置角色
+
+    ```java
+    @GetMapping("secured")
+    @Secured({"ROLE_sale", "ROLE_manager"})
+    public String secured(){
+        return "hello, secured";
+    }
+    ```
+
+3. userDetailsService设置用户角色
+
+    ```java
+    List<GrantedAuthority> roles = AuthorityUtils.commaSeparatedStringToAuthorityList("admin,ROLE_sale1");
+    ```
+
+==@PreAuthorize==
+
+注解适合进入**方法前**的权限验证
+
+```java
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
+```
+
+```java
+@GetMapping("secured")
+@PreAuthorize("hasAuthority('admin')")
+public String secured(){
+    return "hello, secured";
+}
+```
+
+==@PostAuthorize==
+
+注解适合进入**方法后**进行校验
+
+```java
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
+```
+
+```java
+@PostAuthorize("hasAuthority('admin1')")
+public String secured(){
+    System.out.println("就这？九折？");
+    return "hello, secured";
+}
+```
+
+==@PostFilter==
+
+对方法的返回数据进行过滤
+
+==@PreFilter==
+
+传入方法数据进行过滤
+
+###  用户注销
+
+在配置类中进行配置
+
+```java
+http.logout().logoutUrl("/logout").logoutSuccessUrl("/test/hello").permitAll();
+```
+
+### 自动登录
+
+#### 实现原理
+
+![1606613124162](H:\Typora\pics\1606613124162.png)
+
+#### 具体实现
+
+1. 创建数据库表persistent_logins
+
+    ```java
+    //在配置数据源的时候加上这一句，可以自动创建数据库表
+    jdbcTokenRepository.setCreateTableOnStartup(true);
+    //自己创建数据库表，表名必须为persistent_logins
+    ```
+
+2. 配置类，注入数据源，配置操作数据库对象
+
+    ```java
+    @Bean
+    PersistentTokenRepository persistentTokenRepository(){
+        JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        jdbcTokenRepository.setDataSource(dataSource);
+        jdbcTokenRepository.setCreateTableOnStartup(true);
+        return jdbcTokenRepository;
+    }
+    ```
+
+3. 配置类配置自动登录
+
+    ```java
+     .and().rememberMe().tokenRepository(persistentTokenRepository())              .tokenValiditySeconds(60).userDetailsService(userDetailsService)
+    ```
+
+4. 在登录界面添加复选框
+
+### csrf防护
+
+详见https://docs.spring.io/spring-security/site/docs/5.4.1/reference/html5/#servlet-exploits
+
+的第14节

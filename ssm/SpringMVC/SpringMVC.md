@@ -100,7 +100,7 @@ webmvc
 
    注意：如果requestmapping加了/ 那么访问他的链接等不需要加上：\<a href="hello">..\</a>，要么就两个地方都不加/，不然会报错404
 
-   如果连接需要全路径，则需要\<a href="/项目名/hello">..\</a>
+   如果链接需要全路径，则需要\<a href="/项目名/hello">..\</a>
 
 3. 
 
@@ -131,10 +131,10 @@ webmvc
    		eg;params={"username"}：发送请求的时候必须带上一个名为username的参数，没带会404
    	2. !patam1：表示请求不能包含名为param1的请求参数
    		eg;params!={"username"}：发送请求的时候不能带上一个名为username的参数，带了会404
-   	3. patam1!=123：表示请求不能包含名为param1的请求参数
+   	3. patam1!=123：表示请求不能包含名为param1，值为123的请求参数
    		eg;params={"username!=123"}：发送请求的时候不能带上一个名为username,值为123的参数，带了会400(注意：可以不带username，但是带了username，值必须不能为123)
-   	4. {"param1=value1","param2"}: 请求必须包含名为param1和param2的参数，却param1的值为value
-   		eg：params={"username!=123", "pwd", "!age"} 请求的username不能有123，而且必须有pwd，不能有age
+   	4. {"param1=value1","param2"}: 请求必须包含名为param1和param2的参数，且param1的值为value
+   		eg：params={"username!=123", "pwd", "!age"} 请求的username不能为123，而且必须有pwd，不能有age
    ```
 
    
@@ -182,19 +182,47 @@ URL地址可以写模糊的通配符
 
 ```
 
-
-
 ---
 
+转发和重定向
 
-
-
-
-
-
-
-
-
-
-
-
+```java
+@Controller
+public class HelloContorller {
+    @RequestMapping("hello")
+    public String test01(){
+        System.out.println("hello");
+        return "success";
+    }
+    /**
+    * 使用forward进行转发，不会进行自动拼串
+    * /hello.jsp当前项目下的hello
+    * 一定要加上/，不加就是相对路径，容易出问题
+    * */
+    @RequestMapping("hello2")
+    public String test02(){
+        System.out.println("hello2");
+        return "forward:/hello.jsp";
+    }
+    @RequestMapping("hello3")
+    public String test03(){
+        System.out.println("hello3");
+        return "forward:/hello2";
+    }
+    /**
+    * 重定向到hello.jsp界面
+    * 有前缀的转发和重定向操作，配置的视图解析器就不会进行拼串
+    * 转发：forward：转发的路径
+    * 重定向：redirect：重定向的路径
+    *       /hello.jsp:代表就是从当前项目开始；SpringMVC会为路径自动拼接上项目名
+    *
+    *       原生的servlet要加上项目名才能成功
+    *       response.sendRedirect("output/hello.jsp")
+    * */
+    @RequestMapping("hello4")
+    public String test04(){
+        System.out.println("hello4");
+        return "redirect:/hello.jsp";
+    }
+}
+```

@@ -54,6 +54,4 @@ lettuce：采用netty，实例可以再多个线程中进行共享，不存在�
    spring.redis.port=6379
    ```
 
-   
-
 3. 测试

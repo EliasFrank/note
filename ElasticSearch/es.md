@@ -47,3 +47,13 @@ modules 功能模块
 plugins 插件 ik
 ```
 
+ElasticSearch Head安装谷歌插件
+
+配置es
+
+```yml
+http:
+  cors:
+    enabled : true
+    allow-origin : "*"
+```

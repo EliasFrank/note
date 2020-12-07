@@ -81,6 +81,26 @@ ioc是一个容器，帮我们管理所有的组件
 
 **ioc基本操作**
 
+```java
+/**
+     * 几个细节
+     * ApplicationContext（ioc容器的接口）
+     * 1. new ClassPathXmlApplicationContext("text.xml"):ioc容器的配置文件在类路径下。
+     *    new FilePathXmlApplicationContext("c:\\test\\test.xml")ioc容器的配置文件在磁盘路径下。
+     * 2. 给容器中注册一个组件，我们也从容器中按照id拿到了这个组件的对象。
+     *    组件的创建工作，是由容器完成的
+     *3. person对象是什么时候创建好的？
+     *     容器中对象的创建在容器创建完成的时候就已经创建好了。
+     * 4.同一组件在ioc中是单实例的，容器启动完成前就创建好的。
+     * 5.容器中如果没有这个组件，获取这个组件会报错
+     *   Exception in thread "main" org.springframework.beans.factory.NoSuchBeanDefinitionException:
+     *   No bean named 'person3' available
+     * 6.ioc容器在创建这个组件对象的时候，会利用setter方法为Javabean的属性赋值
+     * 7.Javabean的属性名是由类中的setter和getter方法决定的
+     *    所有getter和setter都由系统自动生成。
+     */ 
+```
+
 注册组件涉及到的类
 
 ```java
@@ -304,7 +324,7 @@ id:这个对象的唯一标识
 
 当bean中添加了abstract属性，并且赋值为true，则这个bean的配置是抽象的，不能获取他的实例，只能被别人用来被继承
 
-```
+```xml
 <bean id="person08" class="com.jxau.bean.Person" abstract="true"></bean>
 ```
 
@@ -415,6 +435,12 @@ scope="prototype"/>
 ```
 
 ```java
+ /**
+     * 单例：bean的生命周期
+     *  （容器启动）构造器--->初始化方法---->（容器关闭）销毁方法
+     *  多实例：
+     *    获取bean时（构造器---》初始化方法）----》容器关闭不会调用bean的销毁方法
+     */
 public class MyBeanPostProcession implements BeanPostProcessor {
     /**
      *初始化之前调用
@@ -438,6 +464,13 @@ public class MyBeanPostProcession implements BeanPostProcessor {
      * @param beanName bean在xml配置文件中的id
      * @return
      * @throws BeansException
+     */
+    
+ 	/**
+     * 后置处理器：
+     *  (容器启动）构造器--->后置处理器before。。。---》初始化方法-----》后置处理器after。。。bean初始化完成
+     *  无论bean是否有初始化方法，后置处理器都会默认其有，还会继续工作
+     *
      */
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         System.out.println(beanName + " was inited");
@@ -469,7 +502,32 @@ public class MyBeanPostProcession implements BeanPostProcessor {
     </bean>
 ```
 
-
+```java
+@Controller
+public class BookServlet {
+    /**
+     * 使用Autowired注解实现根据类型实现自动装配
+     */
+    @Qualifier("bookService222")
+    @Autowired(required = false)
+    private BookService bookServiceExt;
+    public void doGet(){
+        System.out.println("bookservlet" + bookServiceExt);
+        //bookServiceExt.saveBook();
+    }
+    /**
+     * 方法也可以autowired化
+     * 这个方法也会在bean创建的时候自动运行
+     * 这个方法上的每一个参数都会自动注入值
+     * 如果里面的参数，有任何一个装配不上，并且注解上标注了(required=false)，这个方法就不会运行
+     * 如果没有标注，则会报错
+     */
+    @Autowired(required=false)
+    public void get(BookDao bookDao, @Qualifier("book") BookService bookService, Book book){
+        System.out.println("get..." + bookDao + " " + book + " " + bookService);
+    }
+}
+```
 
 ```xml 
 <!--<bean id="car02" class="com.jxau.bean.Car">
@@ -526,8 +584,8 @@ public class MyBeanPostProcession implements BeanPostProcessor {
             在SpEL中使用字面量
             引用其他bean
             引用其他bean的某个属性值
-            **调用非静态方法
-            调用静态方法**
+            调用非静态方法
+            调用静态方法
             使用运算法：支持所有运算符
     -->
     <bean id="person02" class="com.jxau.bean.Person">
@@ -554,13 +612,13 @@ public class MyBeanPostProcession implements BeanPostProcessor {
     @Repository: 给数据库层（持久化层，dao层）的组件添加这个注解
     @Component：给不属于以上几层的组件添加这个注解
 
-   (@Service, @Repository, @Component) 注解是可以随便加的：spring底层不回去验证你这个组件
+   (@Service, @Repository, @Component) 注解是可以随便加的：spring底层不会去验证你这个组件
     推荐各自层加各自注解，给程序员看
 
     使用注解将组件快速的加入到容器中需要几步
     1、要添加的组件上标四个注解的任何一个
     2、告诉spring，自动扫描加了注解的组件；依赖context名称空间
-    3、一定要导入aop包，支持支持加注解模式的：spring-aop...
+    3、一定要导入aop包，支持加注解模式的：spring-aop...
     -->
  <!--   <context:component-scan base-package="com.jxau">
         使用context:exclude-filter指定扫描包时不包含的类
@@ -582,16 +640,6 @@ public class MyBeanPostProcession implements BeanPostProcessor {
         <context:include-filter type="annotation" expression="org.springframework.stereotype.Service"></context:include-filter>
     </context:component-scan>-->
     <context:component-scan base-package="com.jxau"></context:component-scan>
-```
-
-```
-/**
-* 方法也可以autowired化
-*  这个方法也会在bean创建的时候自动运行
-*  这个方法上的每一个参数都会自动注入值
-*  如果里面的参数，有任何一个装配不上，并且注解上标注了(required=false)，这个方法就不会运行
-*                                     如果没有标注，则会报错
-*/
 ```
 
 ---
@@ -617,5 +665,5 @@ public class MyBeanPostProcession implements BeanPostProcessor {
                 @Autowired：最强大，因为是spring自己的注解
                 @Resource：j2ee，是java的标准
                 @Inject：EJB
-            @Resource拓展性强，因为是java标准，如果切换陈另外一个容器框架，@Resource还是可以使用的，而@Autowire就不行
+            @Resource拓展性强，因为是java标准，如果切换成另外一个容器框架，@Resource还是可以使用的，而@Autowire就不行
 

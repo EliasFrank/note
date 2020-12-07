@@ -32,7 +32,7 @@ Reading messages... (press Ctrl-C to quit)
 ```bash
 127.0.0.1:6379> publish hl hello # 发布者发布消息到频道
 (integer) 1
-127.0.0.1:6379> publish h1 jj # 发布者发布消息到频道，但是这个频道无人订阅，所以是0
+127.0.0.1:6379> publish h2 jj # 发布者发布消息到频道，但是这个频道无人订阅，所以是0
 (integer) 0 
 127.0.0.1:6379> publish hl world # 发布者发布消息到频道
 (integer) 1
@@ -42,9 +42,9 @@ Reading messages... (press Ctrl-C to quit)
 
 ```
 redis是使用c语言实现的，通过分析redis源码里的pubsub.c文件，了解发布和订阅机制的底层实现，借此加深对redis的理解。
-reids荣国publish、subscribe和pusubscribe等命令实现发布和订阅功能
+reids通过publish、subscribe和pusubscribe等命令实现发布和订阅功能
 通过subscribe命令订阅某个频道后，redis-server里维护了一个字典，字典的键就是一个个channel，而字典的值则是一个链表，链表中保存了所有订阅这个channel的客户端，subscribe命令的关键，就是将客户端添加到给定channel的订阅链表中
-pub/sub从字面上理解就是发布（publish）和订阅（subscribe），在redis中，你可以设定对某一个key值进行消息发布及消息订阅，当一个keu值上进行了消息发布后，所以订阅他的客户端都会收到对应的消息。这一功能最明显的用法就是用作实时消息系统， 比如普通的即时聊天，群聊等功能
+pub/sub从字面上理解就是发布（publish）和订阅（subscribe），在redis中，你可以设定对某一个key值进行消息发布及消息订阅，当一个key值上进行了消息发布后，所有订阅他的客户端都会收到对应的消息。这一功能最明显的用法就是用作实时消息系统， 比如普通的即时聊天，群聊等功能
 ```
 
 使用场景：

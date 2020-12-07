@@ -1,4 +1,4 @@
-1. 所有请求，前端控制器（ispatcherServlet）收到请求，调用doDispatch进行处理
+1. 所有请求，前端控制器（dispatcherServlet）收到请求，调用doDispatch进行处理
 2. 根据HandlerMapping中保存的请求映射信息找到，处理当前请求的处理器执行链（包含拦截器）
 3. 根据当前处理器找到他的HandlerAdapter（适配器）
 4. 拦截器的preHandle先执行
@@ -14,45 +14,10 @@
             3. 都不是，就利用反射创建对象
 6. 拦截器的postHandle执行
 7. 处理结果（页面渲染流程）
-   1. 如果有异常使用异常解析器处理异常，处理完后悔返回modelAndview
+   1. 如果有异常使用异常解析器处理异常，处理完后返回modelAndview
    2. 调用reader进行页面渲染
       1. 视图解析器根据视图名得到视图对象
       2. 视图对象调用render方法
    3. 执行拦截器的afterCompletion
 
 ![1597832175563](C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1597832175563.png)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

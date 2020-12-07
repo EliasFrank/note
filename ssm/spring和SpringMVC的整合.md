@@ -10,33 +10,5 @@ spring的配置文件来配置和业务有关的（事务控制、数据源）
 
 ---
 
-SpringMVC和spring分容器 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+SpringMVC和spring分容器
 
