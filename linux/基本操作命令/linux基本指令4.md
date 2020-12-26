@@ -1,6 +1,6 @@
-![1587274908686](C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1587274908686.png)
+<img src="C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1587274908686.png" alt="1587274908686" style="zoom:50%;" />
 
-![1587298564669](C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1587298564669.png)
+<img src="C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1587298564669.png" alt="1587298564669" style="zoom:50%;" />
 
 ----------
 
@@ -8,7 +8,7 @@ man命令
 
  * 提供命令帮助的文件
 
- * 手册页存放在/user/share/man
+ * 手册页存放在/usr/share/man
 
  * 几乎每个命令都有man的“页面”
 

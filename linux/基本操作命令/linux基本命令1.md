@@ -1,7 +1,7 @@
 执行linux命令的过程
 
 ```
-alias ------ 内部      ---  hash表  -------------$PATH   ------命令找不到
+alias ------ 内部   ---  hash表  -------------$PATH   ------命令找不到
 ```
 
 -----
@@ -20,15 +20,13 @@ alias ------ 内部      ---  hash表  -------------$PATH   ------命令找不�
 
  * 在命令行中定义的别名，仅对当前shell进程有效 
 
- * 如果向永久有效，要定义在配置文件中
+ * 如果想永久有效，要定义在配置文件中
 
    仅当前用户：~/.bashrc
 
    对所有用户有效  /etc/bashrc 
 
 --------
-
-
 
 编辑配置给出的新配置不会立即生效
 
@@ -74,7 +72,7 @@ command ALIASNAME
 
    注意：
 
-   	* 多个选项以及多参数和命令之间使用空白子字符分隔
+   	* 多个选项以及多参数和命令之间使用空白字符分隔
    	* 取消和结束命令执行： Ctrl + c, Ctrl + d
    	* 多个命令可以用；符号隔开
    	* 一个命令可以用\分成多行
@@ -86,14 +84,14 @@ command ALIASNAME
  * linux的两种时钟：
 
    	* 系统时钟: 由linux内核通过CPU的工作评率进行的
-   	* 硬件时钟：主板
+      	* 硬件时钟：主板
 
 * 相关命令：
 
   * date 显示和设置系统时间
 
     ```shell
-    date MMDDHHmmYYYY.ss
+    date MMDDhhmmYYYY.ss
     ```
 
     ```shell
@@ -121,17 +119,17 @@ command ALIASNAME
  * 重启: reboot
 
    	* -f : 强制，不调用shutdown
-   	* -p: 切断电源
+      	* -p: 切断电源
 
  * 关机或重启 : shutdown
 
-   	* shutdown [OPTION] ... [TIME][MESSAGE]
-   	* -r : reboot
-   	* -h halt
-   	* -c : cancel
+  * shutdown [OPTION] ... \[TIME][MESSAGE]
+    * -r : reboot
+    * -h halt
+    * -c : cancel
     * TIME : 无指定，默认相当于+1 (CentOS7)
-      	* now : 立刻，相当于+0
-      	* +m：相对时间表示法，几分钟之后，例如+3
+    * now : 立刻，相当于+0
+    * +m：相对时间表示法，几分钟之后，例如+3
       	* hh:mm: 绝对时间表示，指明具体时间
 
 * 用户登录信息查看命令

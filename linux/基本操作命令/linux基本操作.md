@@ -16,8 +16,6 @@ id -u 查看当前用户的uid
 /usr/bin/sh
 /usr/bin/bash
 /usr/sbin/nologin
-
-
 ```
 
 ![1586610240019](C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1586610240019.png)
