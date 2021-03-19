@@ -97,9 +97,8 @@ jsp、velocity、freemarker、thymeleaf
        <artifactId>spring-boot-starter-thymeleaf</artifactId>
    </dependency>
    切换thymeleaf版本
-   
    ```
-
+   
 2. Thymeleaf使用&语法
 
    我们只需要吧HTML界面放在classpath:/templates/，thymeleaf就能自动渲染

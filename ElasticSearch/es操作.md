@@ -109,7 +109,7 @@ rest风格是一种架构风格，而不是标准，只是提供了一组设计�
     }
     ```
 
-    <img src="upload\image-20201208144424219.png" alt="image-20201208144424219" style="zoom: 25%;" />
+    <img src="upload\image-20201208144424219.png" alt="image-20201208144424219" style="zoom: 50%;" />
 
     如果自己的文档字段没有指定，那么es就会给我们配置默认字段类型
 
@@ -164,7 +164,7 @@ rest风格是一种架构风格，而不是标准，只是提供了一组设计�
 
 通过DELETE命令实现删除、根据你的请求来判断是删除索引还是删除文档记录
 
-使用RESTFUL风格是我们ES推荐大家使用的
+使用RESTFUL风格是ES推荐大家使用的
 
 ### 关于文档的基本操作
 
@@ -343,7 +343,7 @@ GET lyp/user/_search
 
 ```json
 "from": 0, //从第几个数据开始
-  "size": 1  //返回多少条数据
+"size": 1  //返回多少条数据
 //数据下标从0开始
 ```
 
@@ -380,18 +380,25 @@ GET lyp/user/_search
 过滤
 
 ```json
-"filter": {
-    "range": {
-        "age": {
-            "gt": 22,
-            "lt": 30
+POST lyp/_search
+{
+  "query": {
+    "bool": {
+      "filter": {
+        "range": {
+          "age": {
+            "gte": 10,
+            "lt": 55555
+          }
         }
+      }
     }
+  }
 }
 /**
 gt 大于
 lt 小于
-get 大于等于
+gte 大于等于
 lte 小于等于
 */
 ```
@@ -412,6 +419,24 @@ GET lyp/user/_search
 只要满足其中一个结果就可以被查询出来
 这个时候可以通过分值进行基本的判断
 */
+```
+
+固定分数
+
+```json
+POST lyp/_search
+{
+  "query": {
+    "constant_score": {
+      "filter": {
+        "match":{
+          "name":"栾云"
+        }
+      },
+      "boost":1.1
+    }
+  }
+}
 ```
 
 精确查询
