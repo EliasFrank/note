@@ -1,6 +1,6 @@
 ### RDB (Redis Database)
 
-![1600255306387](C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1600255306387.png)
+<img src="C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1600255306387.png" alt="1600255306387" style="zoom:50%;" />
 
 在指定的时间间隔内将内存中的数据集快照写入磁盘，也就是行话将的snapshot快照，他恢复时是将快照文件直接读到内存中。
 
@@ -46,7 +46,7 @@ reids会单独创建（fork）一个子进程来进行持久化，会先将数�
 
 将我们的所有命令都记录下来，history，恢复的时候就把这个文件全部再执行一遍
 
-![1600256510515](C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1600256510515.png)
+<img src="C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1600256510515.png" alt="1600256510515" style="zoom:50%;" />
 
 以日志的形式来记录每个写操作，将Redis执行过的所有指令记录下来（读操作不记录），只许追加文件，但不可以改写文件，redis启动之初会读取该文件重新构建数据，换言之，redis重启的话就根据日志文件的内容将写指令从前到后执行一次以完成数据的恢复工作
 
