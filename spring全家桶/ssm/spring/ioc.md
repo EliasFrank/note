@@ -89,7 +89,7 @@ ioc是一个容器，帮我们管理所有的组件
      *    new FilePathXmlApplicationContext("c:\\test\\test.xml")ioc容器的配置文件在磁盘路径下。
      * 2. 给容器中注册一个组件，我们也从容器中按照id拿到了这个组件的对象。
      *    组件的创建工作，是由容器完成的
-     *3. person对象是什么时候创建好的？
+     * 3. person对象是什么时候创建好的？
      *     容器中对象的创建在容器创建完成的时候就已经创建好了。
      * 4.同一组件在ioc中是单实例的，容器启动完成前就创建好的。
      * 5.容器中如果没有这个组件，获取这个组件会报错
@@ -107,7 +107,7 @@ ioc是一个容器，帮我们管理所有的组件
 public class Person {
 
     //基本类型直接使用，
-    //<property name="name" value="zs"></property>自动进行类型转换
+    //<property name="name" value="zs"/>自动进行类型转换
     private String name = "张三";
     private int age;
     private String gender;
@@ -147,21 +147,28 @@ id:这个对象的唯一标识
             name="name" 指定属性名
             value="alice" 为属性赋值
         -->
-        <property name="name" value="alice"></property>
-        <property name="age" value="17"></property>
-        <property name="gender" value="男"></property>
+        <property name="name" value="alice"/>
+        <property name="age" value="17"/>
+        <property name="gender" value="男"/>
 </bean>
 ```
 
 也可以调用有参构造器为对象赋值时，可以省略name属性，那么会严格按照有参构造器的参数顺序进行赋值
 
 ```xml
-
+<bean id="person03" class="com.jxau.bean.Person">
+    <!--调用有参构造器为对象赋值-->
+    <constructor-arg name="age" value="1"/>
+    <constructor-arg name="email" value="emial@hl.com"/>
+    <constructor-arg name="name" value="张三"/>
+    <constructor-arg name="gender" value="male"/>
+</bean>
 <bean id="person04" class="com.xxxx.bean.Person">
-        <constructor-arg value="elias"></constructor-arg>
-        <constructor-arg value="15"></constructor-arg>
-        <constructor-arg value="female"></constructor-arg>
-        <constructor-arg value="elias@hl.com"></constructor-arg>
+     <!--调用有参构造器为对象赋值时，可以省略name属性，那么会严格按照有参构造器的参数顺序进行赋值-->
+    <constructor-arg value="elias"/>
+    <constructor-arg value="15"/>
+    <constructor-arg value="female"/>
+    <constructor-arg value="elias@hl.com"/>
 </bean>
 ```
 
@@ -190,7 +197,12 @@ id:这个对象的唯一标识
 通过p名称空间为bean赋值名称空间
 
 ```xml
-<bean id="person07" class="com.xxxx.bean.Person" p:age="07" p:name="elias07" p:email="elias@hl.com" p:gender="man"/>
+<!--
+通过p名称空间为bean赋值
+名称空间：在xml中名称空间是用来防止标签重复的
+-->
+<bean id="person07" class="com.xxxx.bean.Person" 
+      p:age="07" p:name="elias07" p:email="elias@hl.com" p:gender="man"/>
 ```
 
 ----
@@ -211,13 +223,16 @@ id:这个对象的唯一标识
 
    ```xml
    <bean id="car01" class="com.xxxx.bean.Car">
-           <property name="name" value="baoma"></property>
-           <property name="color" value="blue"></property>
-           <property name="price" value="100000"></property>
+           <property name="name" value="baoma"/>
+           <property name="color" value="blue"/>
+           <property name="price" value="100000"/>
    </bean>
-   <!--ref代表引用外面的一个值-->
+   <!--
+   ref代表引用外面的一个值
+   相当于Car car = ioc.getBean("car01, Car.class)
+   -->
    <bean id="person01" class="com.xxxx.bean.Person">
-   	<property name="car" ref="car01"></property>
+   	<property name="car" ref="car01"/>
    </bean>
    ```
 
@@ -228,9 +243,9 @@ id:这个对象的唯一标识
    	<property name="car">
                <!--引用内部bean，不能被获取到，只能内部使用-->
                <bean id="car02" class="com.xxxx.bean.Car" >
-                   <property name="price" value="1000"></property>
-                   <property name="color" value="green"></property>
-                   <property name="name" value="benchi"></property>
+                   <property name="price" value="1000"/>
+                   <property name="color" value="green"/>
+                   <property name="name" value="benchi"/>
                </bean>
        </property>
    </bean>
@@ -245,7 +260,7 @@ id:这个对象的唯一标识
        <property name="books">
            <list>
                <bean class="com.xxxx.bean.Book">
-                   <property name="name" value="alice in wonderland"></property>
+                   <property name="name" value="alice in wonderland"/>
                </bean>
                <ref bean="book01"/>
            </list>
@@ -292,7 +307,7 @@ id:这个对象的唯一标识
 
    ```xml
    <bean id="person05" class="com.jxau.bean.Person">
-       <property name="map" ref="myMap"></property>
+       <property name="map" ref="myMap"/>
    </bean>
    <util:map id="myMap" >
        <entry key="key01" value="alice"></entry>
@@ -311,12 +326,12 @@ id:这个对象的唯一标识
    <bean id="person07" class="com.jxau.bean.Person">
        <property name="car">
            <bean id="car02" class="com.jxau.bean.Car" >
-               <property name="price" value="1000"></property>
-               <property name="color" value="green"></property>
-               <property name="name" value="benchi"></property>
+               <property name="price" value="1000"/>
+               <property name="color" value="green"/>
+               <property name="name" value="benchi"/>
            </bean>
        </property>
-       <property name="car.price" value="999"></property>
+       <property name="car.price" value="999"/>
    </bean>
    ```
 
@@ -332,7 +347,7 @@ parent : 指定当前bean的配置信息继承哪个
 
 ```xml
 <bean id="person09" class="com.jxau.bean.Person" parent="person08">
-    <property name="name" value="李四"></property>
+    <property name="name" value="李四"/>
 </bean>
 ```
 
@@ -368,16 +383,25 @@ parent : 指定当前bean的配置信息继承哪个
                 工厂类 工厂对象 = new 工厂类（）；
                 工厂对象.工厂方法名
 -->
-
 <!--只要是FacrotyBean的实现类，spring都认为是一个工厂类-->
 <bean id="factoryAir" class="com.jxau.factory.MyFactoryBean"></bean>
+
+<!--静态工厂-->
+<bean id="AirplaneStaticFactory" class="com.jxau.factory.AirplanStaticFactory"
+      factory-method="getAirplane">
+    <!--为方法指定参数-->
+    <constructor-arg value="张三"></constructor-arg>
+</bean>
+
+<!--实例工厂-->
+<bean id="AirplaneFactory" class="com.jxau.factory.AirplaneFactory"></bean>
+<bean id="plane01" class="com.jxau.bean.Airplane" factory-bean="AirplaneFactory"
+      factory-method="getAirplane">
+    <constructor-arg value="李四"></constructor-arg>
+</bean>
 ```
 
 ```java
-import com.jxau.bean.Airplane;
-import com.jxau.bean.Book;
-import org.springframework.beans.factory.FactoryBean;
-
 /**
  * 实现factorybean接口的类是spring可认识的工厂类
  * spring会自动调用工厂方法创建实例
@@ -436,19 +460,19 @@ scope="prototype"/>
 
 ```java
  /**
-     * 单例：bean的生命周期
-     *  （容器启动）构造器--->初始化方法---->（容器关闭）销毁方法
-     *  多实例：
-     *    获取bean时（构造器---》初始化方法）----》容器关闭不会调用bean的销毁方法
-     */
+ * 单例：bean的生命周期
+ *  （容器启动）构造器--->初始化方法---->（容器关闭）销毁方法
+*  多实例：
+*    获取bean时（构造器---》初始化方法）----》容器关闭不会调用bean的销毁方法
+*/
 public class MyBeanPostProcession implements BeanPostProcessor {
-    /**
-     *初始化之前调用
-     * @param bean 将要初始化的bean
-     * @param beanName 将要初始化的bean在配置文件中的id
-     * @return bean
-     * @throws BeansException
-     */
+/**
+*初始化之前调用
+* @param bean 将要初始化的bean
+* @param beanName 将要初始化的bean在配置文件中的id
+* @return bean
+* @throws BeansException
+*/
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         System.out.println(beanName + " will init");
         if (bean instanceof Book){
@@ -465,12 +489,11 @@ public class MyBeanPostProcession implements BeanPostProcessor {
      * @return
      * @throws BeansException
      */
-    
- 	/**
+
+    /**
      * 后置处理器：
-     *  (容器启动）构造器--->后置处理器before。。。---》初始化方法-----》后置处理器after。。。bean初始化完成
+     *  (容器启动）构造器--->后置处理器before--->初始化方法----->后置处理器after-->bean初始化完成
      *  无论bean是否有初始化方法，后置处理器都会默认其有，还会继续工作
-     *
      */
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         System.out.println(beanName + " was inited");
@@ -490,16 +513,17 @@ public class MyBeanPostProcession implements BeanPostProcessor {
     加载外部配置文件，固定写法classpath:表示引用类路径下的一个资源
 -->
 <context:property-placeholder location="classpath:dbconfig.properties"/>
+<!--username是spring中的key的一个关键字，为了防止配置文件中的key与spring自己的关键字冲突，可以给配置文件中的变量加前缀，例如jdbc_username-->
 <!--
 数据库连接池作为单实例是最好的，一个项目就一个连接池，连接池里面管理很多链接，链接是直接从连接池中拿
 -->
-    <!--可以让spring帮我们创建连接池对象，管理连接池-->
-    <bean id="DataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-        <property name="user" value="${jdbc_username}"></property>
-        <property name="password" value="${jdbc_password}"></property>
-        <property name="driverClass" value="${jdbc_driverClass}"></property>
-        <property name="jdbcUrl" value="${jdbc_jdbcUrl}"></property>
-    </bean>
+<!--可以让spring帮我们创建连接池对象，管理连接池-->
+<bean id="DataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+    <property name="user" value="${jdbc_username}"/>
+    <property name="password" value="${jdbc_password}"/>
+    <property name="driverClass" value="${jdbc_driverClass}"/>
+    <property name="jdbcUrl" value="${jdbc_jdbcUrl}"/>
+</bean>
 ```
 
 ```java
@@ -511,6 +535,7 @@ public class BookServlet {
     @Qualifier("bookService222")
     @Autowired(required = false)
     private BookService bookServiceExt;
+    
     public void doGet(){
         System.out.println("bookservlet" + bookServiceExt);
         //bookServiceExt.saveBook();
@@ -520,7 +545,7 @@ public class BookServlet {
      * 这个方法也会在bean创建的时候自动运行
      * 这个方法上的每一个参数都会自动注入值
      * 如果里面的参数，有任何一个装配不上，并且注解上标注了(required=false)，这个方法就不会运行
-     * 如果没有标注，则会报错
+     * 如果没有标注(required=false)，则会报错
      */
     @Autowired(required=false)
     public void get(BookDao bookDao, @Qualifier("book") BookService bookService, Book book){
@@ -557,7 +582,6 @@ public class BookServlet {
         public Person(Car car){}
         先按照有参构造器的类型进行装配（成功就赋值）没有就直接为组件装配null即可
         如果按照类型找到了多个，就用参数的名作为id去容器中查找，如果找到了，就装配，没有就null
-
     -->
     <bean id="person01" class="com.jxau.bean.Person" autowire="byType"></bean>
     <bean id="car" class="com.jxau.bean.Car">
@@ -666,4 +690,31 @@ public class BookServlet {
                 @Resource：j2ee，是java的标准
                 @Inject：EJB
             @Resource拓展性强，因为是java标准，如果切换成另外一个容器框架，@Resource还是可以使用的，而@Autowire就不行
+
+```java
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+/**
+ * 使用spring的单元测试
+ * 1. 导包spring的单元测试包
+ * 2. @ContextConfiguration(locations="")使用它来指定spring配置文件的位置
+ * 3. @RunWith指定用哪种驱动进行单元测试，默认就是junit
+ *      @RunWith(SpringJunit4ClassRunner.class)
+ *      使用spring的单元测试模块来执行标了@Test注解的测试方法
+ *      以前@Test注解只是由junit执行
+ * 好处：我们不用ioc.getBean（）获取组件了，直接Autowired组件，spring自动为我们装配
+ */
+@ContextConfiguration(locations = "classpath:applicationContext.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+public class test2 {
+    @Autowired
+    private BookService bookService;
+    @Test
+    public void test(){
+        System.out.println(bookService);
+    }
+}
+```
 

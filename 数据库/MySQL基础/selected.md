@@ -25,7 +25,6 @@ select last_name AS 姓, first_name AS 名 from emplyee;
 
 #方式二：使用空格
 select last_name 姓, first_name 名 from emplyee;
-
 ```
 
 **去重**
@@ -58,7 +57,6 @@ where中不允许使用别名
 二、按逻辑表达式筛选
     逻辑运算符：&& || ！ and or not
 三、模糊查询：①like ②between and ③in ④is null
-
 ```
 
 ```sql
