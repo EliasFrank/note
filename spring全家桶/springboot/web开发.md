@@ -126,7 +126,7 @@ jsp、velocity、freemarker、thymeleaf
 
       
 
-![1599911332820](C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1599911332820.png)
+<img src="C:\Users\hl2333\AppData\Roaming\Typora\typora-user-images\1599911332820.png" alt="1599911332820" style="zoom:50%;" />
 
 ---
 

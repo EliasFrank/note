@@ -179,7 +179,6 @@ public static void logReturn(int result){
 
   ```java
   @Pointcut("execution(public int com.jxau.impl.CalculatorImpl.*(*, *))")
-  
   public void testExecution(){}
   ```
 

@@ -674,22 +674,22 @@ public class BookServlet {
         @Autowired
         private BookService bookService;
 
-        1. 先按照类型去容器中找到对应的组件：bookService = ioc.getBean（BookService.class）；
-            1.1 找到一个就赋值
-            1.2 找不到就抛异常
-            1.3 找到多个，默认根据@Autowired注解标记的成员变量名作为id查找bean，进行装配
-                1.3.1 找到就进行装配
-                1.3.2 找不到就报错，是因为我们继续用变量名作为id进行匹配的
-                        可以使用@Qualifier("bookServicec")指定一个新id
-                            找到装配
-                            找不到报错
-                  发现Autowired标注的自动装配的属性默认是一定装配上的
-            可以@Autowired（require=false）来指定某个属性可以不配置,也就是装配null
-            @Autowired, @Resource, @Inject 都是自动装配的注解
-                @Autowired：最强大，因为是spring自己的注解
-                @Resource：j2ee，是java的标准
-                @Inject：EJB
-            @Resource拓展性强，因为是java标准，如果切换成另外一个容器框架，@Resource还是可以使用的，而@Autowire就不行
+    1. 先按照类型去容器中找到对应的组件：bookService = ioc.getBean（BookService.class）；
+    	1.1 找到一个就赋值
+    	1.2 找不到就抛异常
+    	1.3 找到多个，默认根据@Autowired注解标记的成员变量名作为id查找bean，进行装配
+    		1.3.1 找到就进行装配
+    		1.3.2 找不到就报错，是因为我们继续用变量名作为id进行匹配的
+    可以使用@Qualifier("bookServicec")指定一个新id
+    	找到装配
+    	找不到报错
+    发现Autowired标注的自动装配的属性默认是一定装配上的
+    可以@Autowired（require=false）来指定某个属性可以不配置,也就是装配null
+    @Autowired, @Resource, @Inject 都是自动装配的注解
+    @Autowired：最强大，因为是spring自己的注解
+    @Resource：j2ee，是java的标准
+    @Inject：EJB
+    @Resource拓展性强，因为是java标准，如果切换成另外一个容器框架，@Resource还是可以使用的，而@Autowire就不行
 
 ```java
 import org.junit.Test;

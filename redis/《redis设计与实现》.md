@@ -1046,7 +1046,7 @@ flushAppendOnlyFile函数的行为由服务器配置的appendsync选项的值来
 
 为了解决AOF文件体积膨胀的问题，redis提供了AOF文件重写（rewrite）功能
 
-![image-20210802152933227](H:\Notes\redis\upload\image-20210802152933227.png)
+<img src="H:\Notes\redis\upload\image-20210802152933227.png" alt="image-20210802152933227" style="zoom: 67%;" />
 
 因为aof_rewrite函数生成的新AOF文件只包含还原当前数据库状态所必须的命令，所以新AOF文件不会浪费任何硬盘空间
 
