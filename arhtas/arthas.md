@@ -260,4 +260,215 @@ reset
 
 #### getstatic
 
+查看运行时类的静态属性
+
+getstatic 类名 属性名
+
 #### ognl
+
+执行ognl表达式
+
+| 参数名称 | 参数说明                                                    |
+| -------- | ----------------------------------------------------------- |
+| express  | 执行的表达式                                                |
+| [c:]     | 执行表达式Class Loader的hashcode，默认值是SystemClassLoader |
+| [x]      | 结果对象的展开层次，默认值1                                 |
+
+```ognl
+ognl '@java.lang.System@out.println("hello")'
+ognl '@com.learn.demo.MathGame@random'
+ognl '#value1=@System@getProperty("java.home"), #value2= @System@getProperty("java.runtime.name"), {v}'alue1, #value2}'
+```
+
+### Class/Classloader相关命令
+
+#### sc
+
+search class，查看JVM已加载的类信息，这个命令能搜索出所有已经加载到JVM中的Class信息
+
+sc默认开启子类匹配功能，也就是说当前类的子类也会被搜出来，想要精确匹配，需要打开options disable-sub-class true开关
+
+| 参数名称       | 参数说明                                                     |
+| -------------- | ------------------------------------------------------------ |
+| class-pattern  | 类名表达式匹配，支持全限定名，如com.taobao.test.AAA，也支持com/taobao/test/AAA这样的格式 |
+| method-pattern | 方法名表达式匹配                                             |
+| [d]            | 输出当前类的详细信息，包括这个类所加载的原始文件来源，类的声明，加载的ClassLoader等详细信息。如果一个类被多个ClassLoader加载，则会出现多次 |
+| [E]            | 开启正则表达式匹配，默认为通配符匹配                         |
+| [f]            | 输出当前类的成员变量信息（需要配合参数-d一起使用）           |
+
+#### sm
+
+search method，查看已加载的类的方法信息。这个命令能搜索除所有已加载了Class信息的方法信息
+
+sm命令只能看到由当前类所声明的方法，父类的无法看到
+
+| 参数名称       | 参数说明                             |
+| -------------- | ------------------------------------ |
+| class-pattern  | 类名表达式匹配                       |
+| method-pattern | 方法名表达式匹配                     |
+| [d]            | 展示每个方法的详细信息               |
+| [E]            | 开启正则表达式匹配，默认为通配符匹配 |
+
+#### jad
+
+反编译指定已加载类源码
+
+jad命令将JVM中实际运行从class的byte code反编译成java代码，便于理解业务逻辑
+
+在arthas console上，反编译出来的源码是带语法高亮的，阅读方便。反编译出来的java代码可能存在语法错误
+
+| 参数名称      | 参数说明                             |
+| ------------- | ------------------------------------ |
+| class-pattern | 类名表达式匹配                       |
+| [E]           | 开启正则表达式匹配，默认为通配符匹配 |
+
+反编译时只显示源代码，默认会带有ClassLoader信息，通过-source-only选项，可以只打印源代码。方便和mc/redefine命令结合使用
+
+jad -source-only ****
+
+#### mc
+
+Memory Compiler 内存编译器，编辑.java文件生成.class文件
+
+mc  d:/Hello.java -d d:/ 
+
+-d可以指定编译到目录
+
+#### redefine
+
+加载外部的.class文件，redefine到JVM里
+
+```
+redefin后的原来的类不能回复，redefine有可能失败
+reset命令对redefine的类无效，如果想重置，需要redefine原始的字节码
+redefine命令和jad/watch/trace/monior/tt等命令会冲突，执行完redefine之后，如果再执行上面提到的命令，会把redefine的字节码重置
+```
+
+**redefine的限制**
+
+```
+不允许新增加field/method
+正在跑的函数，没有退出不能生效
+```
+
+#### dump
+
+将已加载类的字节码文件保存到特定目录：logs/arthas/classdump/
+
+#### classloader
+
+获取类加载器的信息
+
+1. classloader命令将JVM中所有的classloader的信息统计出来，并可以展示继承树，urls等
+2. 可以让指定classloader去getResources，答应出所有查找到的resource的url。对于ResourceNotFoundException异常比较有用 
+
+| 参数名称          | 参数说明                                |
+| ----------------- | --------------------------------------- |
+| \[l]   *(小写 L)* | 按类加载实例进行统计                    |
+| [t]               | 打印所有ClassLoader的继承树             |
+| [a]               | 列出所有ClassLoader加载的类，请谨慎使用 |
+| [c:]              | ClassLoader的hashcode                   |
+| [c:r:]            | 用ClassLoader去查找resource             |
+| [c:load:]         | 用ClassLoader去加载指定的类             |
+
+* classloader
+
+  ![image-20221030142816978](upload/image-20221030142816978.png)
+
+* classloader -l
+
+  ![image-20221030143407697](upload/image-20221030143407697.png)
+
+### 监视相关命令
+
+watch、stack、trace都支持#cost耗时条件过滤
+
+#### monitor
+
+监控指定类中方法的执行情况
+
+![image-20221030201135764](upload/image-20221030201135764.png)
+
+* timestamp 时间戳
+* class 监视的类名
+* method 监视的方法名
+* total 方法执行了几次
+* success 方法执行成功了几次
+* fail 方法执行失败了几次
+* avg-rt（ms） 方法执行平均耗时
+* fail-rate 失败率
+
+#### watch
+
+观察到指定方法的调用情况
+
+| 参数名称          | 参数说明                                        |
+| ----------------- | ----------------------------------------------- |
+| class-pattern     | 类名表达式匹配                                  |
+| method-pattern    | 方法名表达式匹配                                |
+| express           | 观察表达式                                      |
+| condition-express | 条件表达式                                      |
+| [b]               | 在方法调用之前观察 before                       |
+| [e]               | 在方法异常之后观察 exception                    |
+| [s]               | 在方法返回之后观察 success                      |
+| [f]               | 在方法结束之后（正常返回和异常返回）观察 finish |
+| [E]               | 开启正则表达式匹配，默认为通配符匹配 regex      |
+| [x]               | 指定输出结果的属性遍历深度，默认为1  expend     |
+
+特别说明
+
+* watch命令定义了4个观察事件点，即-b方法调用前，-e方法异常后，-s方法返回后，-f方法结束后
+* 四个观察事件点-b、-e、-s默认关闭，-f默认打开，当指定观察点被打开后，在相应事件点会对观察表达式进行求值并输出
+* 这里要注意**方法入参**和**方法出参**的区别，有可能在中间被修改导致前后不一致，除了-b事件点params代表方法入参外，其余事件都代表方法出参
+* 当使用-b时，由于观察事件点时在方法调用前，此时返回值和异常均不存在
+
+![image-20221030203431622](upload/image-20221030203431622.png)
+
+```
+watch com.learn.demo.MathGame primeFactors "{params, target,returnObj}" "returnObj != null && returnObj.size() > 2" -x 3  //输出returnObj不为null且长度大于2的情况
+```
+
+#### trace
+
+方法内部调用路径，并输出方法路径上的每个节点上耗时
+
+默认情况下，trace不会包含jdk里的函数调用，如果需要，要显示设置 --skipJDKMethod false
+
+#### stack
+
+输出当前方法被调用的调用路径
+
+tt
+
+time tunnel，记录下指定方法每次调用的入参和返回信息，并能对这些不同时间下调用的信息进行观测
+
+| 参数 | 说明                             |
+| ---- | -------------------------------- |
+| -t   | 记录某个方法在一个时间段内的调用 |
+| -l   | 列出所有已经记录的列表           |
+| -n   | 只记录执行次数                   |
+| -s   | 用ognl表达式进行搜索             |
+| -i   | 查看指定索引号的详细调用信息     |
+| -p   | 重新调用指定的索引号时间碎片     |
+
+### 其他命令
+
+#### options
+
+| 名称                | 默认值 | 描述                                                        |
+| ------------------- | ------ | ----------------------------------------------------------- |
+| unsafe              | fasle  | 是否支持对系统级别的类进行增强，打开该开关可能导致把JVM搞挂 |
+| dump                | false  | 是否支持对被增强了的类dump到外部文件中                      |
+| batch-retransform   | true   | 是否支持批量对匹配到的类执行retransform操作                 |
+| json-format         | false  | 是否支持json化输出                                          |
+| disbale-sub-class   | false  | 是否禁用子类匹配，默认在匹配目标类的时候会默认匹配到其子类  |
+| debug-for-asm       | false  | 打印ASM相关的调试信息                                       |
+| save-result         | false  | 是否打开执行结果存日志功能                                  |
+| job-timeout         | 1d     | 异步后台任务的默认超时时间，超过这个时间，任务自动停止      |
+| print-parent-fields | true   | 是否打印parent class里的field                               |
+
+#### profiler
+
+生成火焰图，本质上时通过不断的采样，然后把收集到的采样结果生成火焰图
+
+火焰越高，调用越多
