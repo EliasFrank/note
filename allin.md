@@ -419,9 +419,15 @@ BIO
 
 NIO
 
+非阻塞式I/O模式，线程在读取或者写入数据时可以进行别的操作
+
+* buffer （缓冲区），bio是面向流（stream）nio面向缓冲区（buffer）
+* channel（通道）通道是双向的，可读可写
+* selcetors（选择器）单个线程处理多个通道
+
 AIO
 
-
+异步非阻塞型 IO，是根据事件和回调机制实现的
 
 ### WEB
 
