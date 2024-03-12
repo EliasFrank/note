@@ -263,7 +263,7 @@ for (int i = 0; i < s; i++) {
         break;
     }
 }
-//计算hashCode
+//计算hashCode，用的int值，所以最后算出来的结果不会很大
 int hashCode = 1;
 for (int i = from; i < to; i++) {
     Object e = es[i];
@@ -281,6 +281,7 @@ public boolean addAll(Collection<? extends E> c) {
     System.arraycopy(a, 0, elementData, s, numNew);
 }
 //移除某个集合中的所有元素
+// 找到第一个包含的元素，然后判断是否被需要删除的集合包含，不包含就挨个往前挪
 boolean batchRemove(Collection<?> c, boolean complement,
                     final int from, final int end) {
     final Object[] es = elementData;
