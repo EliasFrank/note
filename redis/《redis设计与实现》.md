@@ -17,7 +17,7 @@ struct sdshdr {
 }
 ```
 
-![image-20210721165706926](H:\Notes\redis\upload\image-20210721165706926.png)
+![image-20210721165706926](upload\image-20210721165706926.png)
 
 ##### SDS与C字符串的区别
 
