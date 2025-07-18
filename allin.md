@@ -1451,3 +1451,5 @@ public static void run(Class<?> primaryClass) {
 <img src="upload/image-20250718145723087.png" alt="image-20250718145723087" style="zoom: 50%;" />
 
 <img src="upload/image-20250718150531923.png" alt="image-20250718150531923" style="zoom:50%;" />
+
+#### arthas热部署原理
