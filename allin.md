@@ -980,13 +980,17 @@ zset可以根据房屋搜索的相关度进行排序
 
 **redis为什么快**
 
+因为他是基于内存的一个数据库，内部的数据结构也是进行过优化的。他是单线程的，避免了高并发下线程切换和锁竞争的问题
+
+### MyBatis
+
 
 
 ### HR
 
 **自我介绍**
 
-面试官你好，我叫黄雷，毕业于江西农业大学软件学院。在用友工作了两年，这两年来我刻苦学习，努力工作，因表现优异被多次评为优秀员工。在编程方面，我有着浓厚的兴趣。在兴趣的驱使下，我在工作期间研读了公司框架的源码，对公司的技术有了进一步的了解，极大的提高了自己的工作效率。在生活中，我待人真诚热情、为人随和、有良好的人际关系和很强的适应能力。我的自我介绍结束了。请面试官多多指教，谢谢。
+面试官你好，我叫黄雷。毕业于江西农业大学软件工程专业。毕业后在用友网络科技股份有限公司担任Java开发工程师，这三年来我刻苦学习，努力工作，因表现优异，多次被评为优秀员工，职级也从p1升到了p3。在三年的工作中，我负责BIP考勤系统相关功能的设计与开发。所在小组主要负责加班、请假、考勤规则、假勤档案等基础功能的重构与优化，对打卡、日月报也有一定了解。同时还参与过公司自研的MDD框架的研发，主要负责基于反射机制的规则引擎的开发。这套框架能做到动态加载不同领域的自定义规则，实现了一套全领域可复用的低代码平台。我的自我介绍结束了。请面试官多多指教。
 
 **你觉得你个性上最大的优点是什么？**
 
@@ -1028,3 +1032,422 @@ zset可以根据房屋搜索的相关度进行排序
 
 公司的晋升机制
 
+### 面试专业问题
+
+#### 代码部署到服务器发现cpu被打满了怎么排查
+
+**使用 `top` 命令**
+ 登录服务器后执行 `top`，观察CPU使用率最高的进程（`%CPU`列）。
+
+**查看进程内线程**
+ 使用 `top -H -p <PID>` 查看目标进程的所有线程（`H` 表示显示线程）。
+
+**使用 `jstack` 分析Java进程**
+
+记得把上面查到的线程转换为16进制。使用 `jstack <PID>` 获取线程堆栈信息，并查找目标线程。根据堆栈信息和线程状态，判断可能的原因。
+
+```
+根据堆栈信息和线程状态，判断可能的原因：
+(1) 计算密集型任务
+表现：线程状态为 RUNNABLE，堆栈显示在执行计算逻辑。
+解决方案：检查代码中的死循环、递归或高频计算（如正则表达式、加密算法）。优化算法复杂度或拆分任务。
+(2) 频繁GC
+表现：线程名为 GC Task Thread 或 VM Thread。
+解决方案：启用GC日志分析（-Xlog:gc* 参数）。调整堆内存大小（-Xmx/-Xms）。
+(3) 锁竞争
+表现：大量线程状态为 BLOCKED 或 WAITING，堆栈显示等待锁。
+解决方案：使用 jstack 检查死锁提示（Found one Java-level deadlock）。优化锁粒度或改用无锁数据结构。
+(4) 外部依赖异常
+表现：线程卡在IO操作（如 java.net.SocketInputStream.read）。
+解决方案：检查数据库、RPC调用或第三方接口的响应时间。添加超时机制或重试策略。
+```
+
+#### 代码部署到服务器发现内存被打满了怎么排查
+
+使用 `free` 命令查看内存状态
+
+使用 `vmstat` 命令查看内存和交换分区动态
+
+ 使用 `top` 或 `htop` 实时监控进程内存
+
+```
+top -o %MEM  # 按内存使用率排序
+```
+
+查找占用内存最多的进程
+
+```
+ps -eo pid,%mem,cmd --sort -%mem | head -n 10
+```
+
+检查进程的内存使用细节
+
+```
+pmap -x <PID>  # 查看进程的内存映射
+```
+
+- 分析内存问题原因
+
+- (1) 应用层问题
+
+- 1. **内存泄漏**
+     - **现象**：堆内存（heap）持续增长，最终耗尽物理内存。
+     - 排查方法：对于 Java 应用：使用 `jstat -gc <PID>` 查看堆内存变化，或通过 `jmap` 生成堆转储文件分析。
+  2. **缓存失控**
+     - **现象**：缓存数据未设置过期时间，导致内存被占满。
+     - 排查方法
+       - 检查 Redis 或 Memcached 的 `maxmemory` 配置。
+       - 使用 `MEMORY STATS`（Redis）或 `stats`（Memcached）查看缓存占用。
+  3. **高频 GC（垃圾回收）**
+     - **现象**：频繁触发 GC，导致 CPU 和内存波动。
+     - 排查方法
+       - Java 应用：启用 GC 日志（`-Xlog:gc*`）分析 GC 频率。
+       - 调整 JVM 参数（如 `-Xmx` 和 `-Xms`）优化堆大小
+
+#### **CompletableFuture**
+
+`CompletableFuture` 是 Java 8 引入的用于简化异步编程的工具类，基于 `Future` 接口扩展，支持链式调用、任务编排、异常处理等高级功能。它通过函数式编程风格，解决了传统 `Future` 的局限性（如无法手动完成任务、无法链式依赖等），广泛应用于高并发、异步任务处理的场景。
+
+默认使用 `ForkJoinPool.commonPool()`，但建议显式指定线程池以避免资源竞争（尤其是 I/O 密集型任务）。
+
+等待全部数据查询完成后再统一进行处理
+
+#### sql优化
+
+* 避免使用select *
+* 分页查询
+* 避免做多表join操作
+* 尽量不要使用外键
+* 正确使用索引
+  * 主键自动创建主键索引
+  * 频繁作为查询的字段
+  * 查询中与与其他表关联的字段，外键建立索引
+  * 查询中排序的字段，如果字段排序了，用索引将会提高效率
+  * 高并发下趋向使用组合索引
+  * 查询中统计或分组字段
+  * 尽量选择唯一性索引
+  * 适合索引的列是WHERE查询子句的列，或者是连接子句中指定的列
+* 避免错误的使用索引
+  * 表记录较少（MySQL自己可以处理，不需要索引，反而会影响效率）
+    * 经常增删改的表（在增删改的时候，索引文件同时需要更改，影响效率）
+    * 数据重复且平均分配的字段，例如国籍，性别等，不适合创建索引
+    * 频繁更新的字段
+    * WHERE里用不到的字段不适合创建索引，因为在使用WHERE时，用不到的字段会导致索引失效。
+
+#### redis分布式锁
+
+Redisson 是一个基于 Redis 的 Java 客户端。为了解决重入问题，redisson使用了hash来实现分布式锁。redisson使用lua脚本设置key和过期时间，并且这个操作是原子性的。
+
+watchdog子线程，每过1/3的锁时间，就会自动为锁做一个续期。
+
+setnx必须要加上过期时间，不然如果持有锁的进程挂了，会造成“死锁”
+
+![image-20250716164108923](upload/image-20250716164108923.png)
+
+基于 Redis 官方推荐的 RedLock 算法，通过多个独立 Redis 节点确保锁的高可用性。
+
+加锁流程：
+
+1. 客户端向 N 个独立的 Redis 主节点 发送加锁请求。
+2. 每个节点的锁需设置相同的 唯一标识（如 UUID）和 过期时间（TTL）。
+3. 客户端记录加锁开始时间。
+4. 如果客户端在 大多数节点（N/2+1）上成功加锁，并且总耗时小于锁的 TTL，则认为加锁成功。
+5. 实际有效时间 = TTL - 总耗时。
+
+解锁流程：客户端需向 所有 Redis 节点 发送解锁请求，即使某些节点未成功加锁。确保锁的最终释放，避免因网络故障导致锁残留
+
+<img src="upload/image-20250716193054282.png" alt="image-20250716193054282" style="zoom: 80%;" />
+
+#### @Component和@Bean的区别
+
+- `@Component` 注解作用于类，而`@Bean`注解作用于方法。
+- `@Component`通常是通过类路径扫描来自动侦测以及自动装配到 Spring 容器中（我们可以使用 `@ComponentScan` 注解定义要扫描的路径从中找出标识了需要装配的类自动装配到 Spring 的 bean 容器中）。`@Bean` 注解通常是我们在标有该注解的方法中定义产生这个 bean,`@Bean`告诉了 Spring 这是某个类的实例，当我需要用它的时候还给我。
+- `@Bean` 注解比 `@Component` 注解的自定义性更强，而且很多地方我们只能通过 `@Bean` 注解来注册 bean。比如当我们引用第三方库中的类需要装配到 `Spring`容器时，则只能通过 `@Bean`来实现。
+
+####  新创建一个接口需要注意什么
+
+1. 参数校验
+2. 权限控制
+3. sql优化，查询字段添加索引
+4. 如果是高频访问的数据可以缓存到本地或者redis中
+5. 数据量过大需要分页查询
+6. 记录日志
+7. 构建数据集
+
+#### Spring 中 Bean 的作用域通常有下面几种：
+
+- **singleton** : IoC 容器中只有唯一的 bean 实例。Spring 中的 bean 默认都是单例的，是对单例设计模式的应用。
+- **prototype** : 每次获取都会创建一个新的 bean 实例。也就是说，连续 `getBean()` 两次，得到的是不同的 Bean 实例。
+- **request** （仅 Web 应用可用）: 每一次 HTTP 请求都会产生一个新的 bean（请求 bean），该 bean 仅在当前 HTTP request 内有效。
+- **session** （仅 Web 应用可用） : 每一次来自新 session 的 HTTP 请求都会产生一个新的 bean（会话 bean），该 bean 仅在当前 HTTP session 内有效。
+- **application/global-session** （仅 Web 应用可用）：每个 Web 应用在启动时创建一个 Bean（应用 Bean），该 bean 仅在当前应用启动时间内有效。
+- **websocket** （仅 Web 应用可用）：每一次 WebSocket 会话产生一个新的 bean
+
+默认是单实例，需要多实例的话可以使用@Scope注解
+
+```java
+@Bean
+@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+public Person personPrototype() {
+    return new Person();
+}
+```
+
+#### ThreadLocal
+
+```java
+public class Thread implements Runnable {
+    //......
+    //与此线程有关的ThreadLocal值。由ThreadLocal类维护
+    ThreadLocal.ThreadLocalMap threadLocals = null;
+
+    //与此线程有关的InheritableThreadLocal值。由InheritableThreadLocal类维护
+    ThreadLocal.ThreadLocalMap inheritableThreadLocals = null;
+    //......
+}
+```
+
+```java
+public void set(T value) {
+    //获取当前请求的线程
+    Thread t = Thread.currentThread();
+    //取出 Thread 类内部的 threadLocals 变量(哈希表结构)
+    ThreadLocalMap map = getMap(t);
+    if (map != null)
+        // 将需要存储的值放入到这个哈希表中，键用的是当前threadLocal对象的哈希值
+        map.set(this, value);
+    else
+        createMap(t, value);
+}
+ThreadLocalMap getMap(Thread t) {
+    return t.threadLocals;
+}
+```
+
+**最终的变量是放在了当前线程的 `ThreadLocalMap` 中，并不是存在 `ThreadLocal` 上，`ThreadLocal` 可以理解为只是`ThreadLocalMap`的封装，传递了变量值。**`ThrealLocal` 类中可以通过`Thread.currentThread()`获取到当前线程对象后，直接通过`getMap(Thread t)`可以访问到该线程的`ThreadLocalMap`对象
+
+#### Bean的生命周期
+
+1. **创建 Bean 的实例**：Bean 容器首先会找到配置文件中的 Bean 定义，然后使用 Java 反射 API 来创建 Bean 的实例。
+2. **Bean 属性赋值/填充**：为 Bean 设置相关属性和依赖，例如`@Autowired` 等注解注入的对象、`@Value` 注入的值、`setter`方法或构造函数注入依赖和值、`@Resource`注入的各种资源。
+3. **Bean 初始化**：
+   * 如果实现了其他 `*.Aware`接口，就调用相应的方法。
+   * 如果有和加载这个 Bean 的 Spring 容器相关的 `BeanPostProcessor` 对象，执行`postProcessBeforeInitialization()` 方法
+   * 如果 Bean 实现了`InitializingBean`接口，执行`afterPropertiesSet()`方法。
+   * 如果 Bean 在配置文件中的定义包含 `init-method` 属性，执行指定的方法。
+   * 如果有和加载这个 Bean 的 Spring 容器相关的 `BeanPostProcessor` 对象，执行`postProcessAfterInitialization()` 方法。
+4. **销毁 Bean**：销毁并不是说要立马把 Bean 给销毁掉，而是把 Bean 的销毁方法先记录下来，将来需要销毁 Bean 或者销毁容器的时候，就调用这些方法去释放 Bean 所持有的资源。
+   * 如果 Bean 实现了 `DisposableBean` 接口，执行 `destroy()` 方法。
+   * 如果 Bean 在配置文件中的定义包含 `destroy-method` 属性，执行指定的 Bean 销毁方法。或者，也可以直接通过`@PreDestroy` 注解标记 Bean 销毁之前执行的方法。
+
+```java
+protected Object doCreateBean(final String beanName, final RootBeanDefinition mbd, final @Nullable Object[] args)
+    throws BeanCreationException {
+
+    // 1. 创建 Bean 的实例
+    BeanWrapper instanceWrapper = null;
+    if (instanceWrapper == null) {
+        instanceWrapper = createBeanInstance(beanName, mbd, args);
+    }
+
+    Object exposedObject = bean;
+    try {
+        // 2. Bean 属性赋值/填充
+        populateBean(beanName, mbd, instanceWrapper);
+        // 3. Bean 初始化
+        exposedObject = initializeBean(beanName, exposedObject, mbd);
+    }
+
+    // 4. 销毁 Bean-注册回调接口
+    try {
+        registerDisposableBeanIfNecessary(beanName, bean, mbd);
+    }
+
+    return exposedObject;
+}
+```
+
+整体上可以简单分为四步：实例化 —> 属性赋值 —> 初始化 —> 销毁。
+
+初始化这一步涉及到的步骤比较多，包含 `Aware` 接口的依赖注入、`BeanPostProcessor` 在初始化前后的处理以及 `InitializingBean` 和 `init-method` 的初始化操作。
+
+销毁这一步会注册相关销毁回调接口，最后通过`DisposableBean` 和 `destory-method` 进行销毁。
+
+<img src="upload/image-20250716232834554.png" alt="image-20250716232834554" style="zoom:80%;" />
+
+#### 多个切面的执行顺序如何控制？
+
+通常使用`@Order` 注解直接定义切面顺序，或者实现`Ordered` 接口重写 `getOrder` 方法。
+
+#### Spring MVC 的核心组件有哪些？
+
+- **`DispatcherServlet`**：**核心的中央处理器**，负责接收请求、分发，并给予客户端响应。
+- **`HandlerMapping`**：**处理器映射器**，根据 URL 去匹配查找能处理的 `Handler` ，并会将请求涉及到的拦截器和 `Handler` 一起封装。
+- **`HandlerAdapter`**：**处理器适配器**，根据 `HandlerMapping` 找到的 `Handler` ，适配执行对应的 `Handler`；
+- **`Handler`**：**请求处理器**，处理实际请求的处理器。
+- **`ViewResolver`**：**视图解析器**，根据 `Handler` 返回的逻辑视图 / 视图，解析并渲染真正的视图，并传递给 `DispatcherServlet` 响应客户端
+
+<img src="upload/image-20250717095401473.png" alt="image-20250717095401473" style="zoom:80%;" />
+
+#### Spring 框架中用到了哪些设计模式？
+
+- **工厂设计模式** : Spring 使用工厂模式通过 `BeanFactory`、`ApplicationContext` 创建 bean 对象。
+- **代理设计模式** : Spring AOP 功能的实现。
+- **单例设计模式** : Spring 中的 Bean 默认都是单例的。
+- **模板方法模式** : Spring 中 `jdbcTemplate`、`hibernateTemplate` 等以 Template 结尾的对数据库操作的类，它们就使用到了模板模式。
+- **包装器设计模式** : 我们的项目需要连接多个数据库，而且不同的客户在每次访问中根据需要会去访问不同的数据库。这种模式让我们可以根据客户的需求能够动态切换不同的数据源。
+- **观察者模式:** Spring 事件驱动模型就是观察者模式很经典的一个应用。
+- **适配器模式** : Spring AOP 的增强或通知(Advice)使用到了适配器模式、spring MVC 中也是用到了适配器模式适配`Controller`。
+
+#### Spring 的循环依赖
+
+**一级缓存（singletonObjects）**：存放最终形态的 Bean（已经实例化、属性填充、初始化），单例池，为“Spring 的单例属性”⽽⽣。一般情况我们获取 Bean 都是从这里获取的，但是并不是所有的 Bean 都在单例池里面，例如原型 Bean 就不在里面。
+
+**二级缓存（earlySingletonObjects）**：存放过渡 Bean（半成品，尚未属性填充），也就是三级缓存中`ObjectFactory`产生的对象，与三级缓存配合使用的，可以防止 AOP 的情况下，每次调用`ObjectFactory#getObject()`都是会产生新的代理对象的。
+
+**三级缓存（singletonFactories）**：存放`ObjectFactory`，`ObjectFactory`的`getObject()`方法（最终调用的是`getEarlyBeanReference()`方法）可以生成原始 Bean 对象或者代理对象（如果 Bean 被 AOP 切面代理）。三级缓存只会对单例 Bean 生效。
+
+```java
+//当 Spring 创建 A 之后，发现 A 依赖了 B ，又去创建 B，B 依赖了 A ，又去创建 A；在 B 创建 A 的时候，那么此时 A 就发生了循环依赖，由于 A 此时还没有初始化完成，因此在 一二级缓存 中肯定没有 A；那么此时就去三级缓存中调用 getObject() 方法去获取 A 的 前期暴露的对象 ，也就是调用上边加入的 getEarlyBeanReference() 方法，生成一个 A 的 前期暴露对象；然后就将这个 ObjectFactory 从三级缓存中移除，并且将前期暴露对象放入到二级缓存中，那么 B 就将这个前期暴露对象注入到依赖，来支持循环依赖。
+class A {
+    // 使用了 B
+    private B b;
+}
+class B {
+    // 使用了 A
+    private A a;
+}
+```
+
+在三级缓存这一块，主要记一下 Spring 是如何支持循环依赖的即可，也就是如果发生循环依赖的话，就去 **三级缓存 `singletonFactories`** 中拿到三级缓存中存储的 `ObjectFactory` 并调用它的 `getObject()` 方法来获取这个循环依赖对象的前期暴露对象（虽然还没初始化完成，但是可以拿到该对象在堆中的存储地址了），并且将这个前期暴露对象放到二级缓存中，这样在循环依赖时，就不会重复初始化了！
+
+#### Spring 事务中哪几种事务传播行为
+
+* **`TransactionDefinition.PROPAGATION_REQUIRED`**
+
+  `@Transactional`注解默认使用就是这个事务传播行为。如果当前存在事务，则加入该事务；如果当前没有事务，则创建一个新的事务。
+
+* **`TransactionDefinition.PROPAGATION_REQUIRES_NEW`**
+
+  创建一个新的事务，如果当前存在事务，则把当前事务挂起。也就是说不管外部方法是否开启事务，`Propagation.REQUIRES_NEW`修饰的内部方法会新开启自己的事务，且开启的事务相互独立，互不干扰。
+
+* **`TransactionDefinition.PROPAGATION_NESTED`**
+
+  如果当前存在事务，则创建一个事务作为当前事务的嵌套事务来运行；如果当前没有事务，则该取值等价于`TransactionDefinition.PROPAGATION_REQUIRED`
+
+* **`TransactionDefinition.PROPAGATION_MANDATORY`**
+
+  如果当前存在事务，则加入该事务；如果当前没有事务，则抛出异常。（mandatory：强制性）
+
+* **`TransactionDefinition.PROPAGATION_SUPPORTS`**
+
+  如果当前存在事务，则加入该事务；如果当前没有事务，则以非事务的方式继续运行。
+
+* **`TransactionDefinition.PROPAGATION_NOT_SUPPORTED`**
+
+  以非事务方式运行，如果当前存在事务，则把当前事务挂起
+
+* **`TransactionDefinition.PROPAGATION_NEVER`**
+
+  以非事务方式运行，如果当前存在事务，则抛出异常
+
+#### 主键索引和唯一索引的区别
+
+<img src="upload/image-20250717160335410.png" alt="image-20250717160335410" style="zoom: 67%;" />
+
+- 主键索引
+
+  - 聚簇索引（Clustered Index）：表数据按主键顺序存储，主键索引的叶子节点直接包含行数据。
+  - 优势：通过主键查询时无需回表，效率极高。
+
+- 唯一索引
+
+  * 二级索引（Secondary Index）：叶子节点存储的是主键值，需通过主键索引回表查询数据。
+
+  - 劣势：查询效率略低于主键索引
+
+#### spring事务失效的几种场景
+
+1. 没添加@EnableTransactionManagement注解到配置类
+2. 方法访问权限错误，因为他是通过aop代理实现的，final和private方法不能代理
+3. 同类内方法调用，Spring 事务基于 AOP 代理，非容器管理的对象无法被代理。
+4. 线程中事务失效，事务是和当前线程绑定的，新线程无事务上下文。
+
+#### springboot的pom文件中，各种starter的原理
+
+**依赖聚合 + 自动配置 + 模块分离**，通过标准化的模块设计和约定，帮助开发者快速引入功能模块并实现开箱即用的配置。Starter 通过 Maven/Gradle 的依赖传递性，将复杂依赖关系封装成一个简单的依赖项。
+
+`xxx-starter` 模块（启动器模块）
+
+- 职责：作为依赖聚合入口，管理 xxx-autoconfigure模块和其他第三方依赖。
+  - 在 `pom.xml` 中声明对 `xxx-autoconfigure` 和其他依赖的依赖。
+  - 通过 Maven/Gradle 的依赖传递性，将所有必需的依赖传递给用户项目。
+- 特点
+  - 用户入口：开发者只需在 `pom.xml` 中添加 `xxx-starter` 依赖即可。
+  - 简化配置：用户无需手动管理复杂的依赖关系和版本兼容性。
+
+#### springboot自动配置原理
+
+1. @SpringBootApplication
+
+   - 这是 Spring Boot 应用的启动注解，本质上是三个注解的组合：
+     - `@SpringBootConfiguration`：标识为配置类（等价于 `@Configuration`）。
+     - `@ComponentScan`：扫描组件，自动注册 Bean。
+     - `@EnableAutoConfiguration`：开启自动配置的核心注解。
+
+2. @EnableAutoConfiguration
+
+   - 通过 `@Import(AutoConfigurationImportSelector.class)` 导入自动配置选择器。
+   - AutoConfigurationImportSelector的作用是：
+     - 读取 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 文件（Spring Boot 2.7+）或旧版的 `spring.factories` 文件中的自动配置类列表。
+     - 根据条件注解过滤并加载符合条件的配置类到 Spring 容器中。
+
+3. 排除自动配置
+
+   ```java
+   // 通过 @SpringBootApplication 的 exclude 属性
+   @SpringBootApplication(exclude = {MyAutoConfiguration.class})
+   ```
+
+   ```properties
+   # 在 application.properties 中配置
+   spring.autoconfigure.exclude=com.example.MyAutoConfiguration
+   ```
+
+```java
+@Configuration
+@ConditionalOnClass(DataSource.class) // 类路径存在 DataSource 时生效
+@EnableConfigurationProperties(DataSourceProperties.class) // 绑定配置属性
+@AutoConfigureAfter(DataSourceAutoConfiguration.class) // 依赖其他配置
+public class DataSourceAutoConfiguration {
+    @Bean
+    @ConditionalOnMissingBean // 用户未自定义 DataSource 时创建
+    public DataSource dataSource(DataSourceProperties properties) {
+        return properties.initializeDataSourceBuilder().build();
+    }
+}
+```
+
+```java
+// springboot启动流程
+public static void run(Class<?> primaryClass) {
+    // 创建一个ApplicationContext实例，就是常说的ioc容器
+    ApplicationContext context = createApplicationContext();
+    // 将主类注册到ioc容器中
+    loadSourceClass(context, primaryClass);
+    // 递归加载并处理所有配置类
+    processConfigurationClasses(context);
+    // 实例化所有单例bean
+    instantiateSingletonBeans(contenxt);
+    // 如果是web应用，启动web服务器
+    startWebService(context);
+}
+```
+
+<img src="upload/image-20250718134420170.png" alt="image-20250718134420170" style="zoom: 50%;" />![image-20250718134514304](upload/image-20250718134514304.png)
+
+![image-20250718134514304](upload/image-20250718134514304.png)
+
+<img src="upload/image-20250718145723087.png" alt="image-20250718145723087" style="zoom: 50%;" />
+
+<img src="upload/image-20250718150531923.png" alt="image-20250718150531923" style="zoom:50%;" />

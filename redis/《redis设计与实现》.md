@@ -683,7 +683,7 @@ del 删除键
 set 更新键
 get 对键取值
 lrange 范围取值
-fushdb 删除键空间中的所有键值对
+flushdb 删除键空间中的所有键值对
 randomkey 返回某个键
 dbsize 返回数据库键数量
 exists 判断键是否存在
@@ -808,7 +808,7 @@ redis.c/activeExpireCycle
 **载入RDB**
 
 * 如果服务器以主服务器模式运行。那么在载入的时候，会对文件中保存的键进行检查，未过期的键会被载入到数据库中，而过期的键会被忽略
-* 如果是从服务器，字载入文件的时候，文件中保存的所有的键，无论是否过期，都会被载入到数据库中。但是主从同步的时候，从服务器会被清空，所以不会造成影响
+* 如果是从服务器，在载入文件的时候，文件中保存的所有的键，无论是否过期，都会被载入到数据库中。但是主从同步的时候，从服务器会被清空，所以不会造成影响
 
 ##### AOF
 
@@ -960,7 +960,7 @@ redis每个100毫秒就会执行一次serverCron，该函数会检查save选项�
 
 ![image-20210729164311644](./upload/image-20210729164311644.png)
 
-其中databases包含着0个或任意多个数据库，以及各个数9据库中的键值对数据
+其中databases包含着0个或任意多个数据库，以及各个数据库中的键值对数据
 
 如果只有0号和3号数据库有数据，rdb文件如下
 
@@ -1358,7 +1358,7 @@ SENTINEL is-master-down-by-addr <ip> <port> <current_epoch> <runid>
 * 当一个sentinel向另一个发送SEN...并且命令中的runid不是*符号而是sentinel的运行id时，表示源sentinel都会要求sentinel将自己设置为局部领头
 * 设置局部领头的规则是先到先得，后面接受到的所有设置要求都会被拒绝
 * 收到SENTINEL is-master-down-by-addr后会进行会回复，回复中的leader_runid和leader_epoch分别记录了目标sentinel的局部领头sentinel的运行id和配置纪元
-* 源在接收到命令回复之后，会检查leader_epoch是否和自己相同，如果相同，取出leader_runid参数，如果一直，表示目标将源设置为了领头
+* 源在接收到命令回复之后，会检查leader_epoch是否和自己相同，如果相同，取出leader_runid参数，如果一致，表示目标将源设置为了领头
 * 如果某个sentinel被半数以上的sentinel设置成了局部领头，那么就会成为领头
 * 一个配置纪元里面只会出现一个领头
 * 如果没有一个被选举为领头，各个sentinel将在一段时间之后再次进行选举
