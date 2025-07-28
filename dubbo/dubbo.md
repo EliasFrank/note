@@ -1,6 +1,40 @@
+### 分布式系统
+
+分布式系统是若干独立计算机的合集，这些计算机对用户来说就像单个相关系统
+
 ### RPC
 
 RPC(Remote Procedure Call)是指远程过程调用，是一种进程间通信方式，他是一种技术的思想，而不是规范。他允许程序调用另一个地址空间(通常时共享网络的另一台机器上)的过程或函数，而不用程序员显式编码这个远程调用的细节。即程序员无论是调用本地的还是远程的函数，本质上编写的调用代码基本相同。
+
+### provider.xml
+
+```xml
+<beans>
+    <!-- 指定当前服务名称 -->
+    <dubbo:application name = "" ></dubbo:application>
+    <!-- 指定注册中心位置 -->
+    <dubbo:register protocol = "zookeeper" address =  ""></dubbo:register>
+    <!-- 指定通信规则 -->
+    <dubbo:protocol name = "dubbo" port = "20880"></dubbo:protocol> 
+    <!-- 暴露服务, ref指向服务真正的实现对象 -->
+    <dubbo:service interface = "" ref = ""></dubbo:service>
+    <bean id = "test" class = ""></bean>
+</beans>
+```
+
+```xml
+<beans>
+    <!-- 指定当前服务名称 -->
+    <dubbo:application name = "" ></dubbo:application>
+    <!-- 指定注册中心位置 -->
+    <dubbo:register protocol = "zookeeper" address =  ""></dubbo:register>
+    <!-- 指定通信规则 -->
+    <dubbo:protocol name = "dubbo" port = "20880"></dubbo:protocol> 
+    <!-- 声明需要调用的远程服务的接口，生成远程服务代理 -->
+    <dubbo:reference interface = "" id = ""></dubbo:reference>
+    
+</beans>
+```
 
 ### 覆盖策略：
 
@@ -43,6 +77,26 @@ zookeeper注册中心宕机，还可以消费dubbo暴露的服务
 3. 最少活跃调用数，相同活跃数的随机，活跃数指调用前后计数差，使慢的提供者收到更少请求，因为越慢的提供者的调用前后计数差别会越大
 4. 一致性hash，相同参数的请求总是发到同一个提供者
 
+### 服务降级
+
+![image-20250723224500671](upload/image-20250723224500671.png)
+
+### RPC原理
+
+<img src="upload/image-20250724190854264.png" alt="image-20250724190854264" style="zoom: 67%;" />
+
+一次同步的RPC调用流程
+
+1. 服务消费方（client）调用以本地方法调用方式调用服务
+2. client stub接收到调用后负责将方法、参数组装成能够进行网络传输的消息体
+3. client stub找到服务地址后，将消息发送到服务端
+4. server stub收到消息后进行解码
+5. server stub根据解码结果调用本地服务
+6. 本地服务执行并将结果返回给server stub
+7. server stub将返回结果打包成消息并发送至消费方
+8. client stub接收到消息，并进行解码
+9. 服务消费方得到最终结果
+
 ### 集群容错模式
 
 * 失败自动切换，当出现失败，重试其他服务器，通常用于读操作，但重试会带来更长的延迟。可通过retries="2"来设置重试次数（不含第一次）
@@ -52,3 +106,22 @@ zookeeper注册中心宕机，还可以消费dubbo暴露的服务
 * 并行调用多个服务器，只要一个成功即返回。通过用于实时性要求较高的读擦欧总，但需要浪费更多服务资源。可通过forks="2"来设置最大并行数
 * 广播调用所有提供者，逐个调用，任意一台报错则报错。通常用于通知所有提供者更新缓存或日志等本地资源信息
 
+### dubbo框架原理
+
+![image-20250724200727497](upload/image-20250724200727497.png)
+
+#### 服务暴露流程
+
+```java
+DubboBeanDefinitionParser implements BeanDefinitionParser {
+   BeanDefinition parse()
+}
+```
+
+<img src="upload/image-20250724201622631.png" alt="image-20250724201622631" style="zoom:50%;" />
+
+#### 服务引用流程
+
+![image-20250724213718890](upload/image-20250724213718890.png)
+
+#### 服务调用流程

@@ -32,6 +32,25 @@ TERMINATED;//终止
 
 <img src="upload/image-20210924100247326.png" alt="image-20210924100247326" style="zoom: 67%;" />
 
+#### 线程池
+
+七大参数
+
+* int corePoolSize,//线程池的核心线程数量
+* int maximumPoolSize,//线程池的最大线程数
+* long keepAliveTime,//当线程数大于核心线程数时，多余的空闲线程存活的最长时间 
+* TimeUnit unit,//时间单位
+* BlockingQueue<Runnable> workQueue,//任务队列，用来储存等待执行任务的队列
+* ThreadFactory threadFactory,//线程工厂，用来创建线程，一般默认即可
+* RejectedExecutionHandler handler//拒绝策略，当提交的任务过多而不能及时处理时，我们可以定制策略来处理任务                               
+
+四大拒绝策略
+
+* `ThreadPoolExecutor.AbortPolicy`：抛出 `RejectedExecutionException`来拒绝新任务的处理。
+* `ThreadPoolExecutor.CallerRunsPolicy`：调用执行者自己的线程运行任务，也就是直接在调用`execute`方法的线程中运行(`run`)被拒绝的任务，如果执行程序已关闭，则会丢弃该任务。因此这种策略会降低对于新任务提交速度，影响程序的整体性能。如果你的应用程序可以承受此延迟并且你要求任何一个任务请求都要被执行的话，你可以选择这个策略。
+* `ThreadPoolExecutor.DiscardPolicy`：不处理新任务，直接丢弃掉。
+* `ThreadPoolExecutor.DiscardOldestPolicy`：此策略将丢弃最早的未处理的任务请求。
+
 #### **lambd**
 
 **lambda入门**
@@ -595,6 +614,8 @@ Tomcat中Session的默认超时时间为20分钟。通过setMaxInactiveInterval(
 
 ### MySQL
 
+#### 常用命令
+
 ```sql
 #常用命令
 #1.查看当前所有的数据库
@@ -678,7 +699,7 @@ check #检查约束（mysql不支持）
 foreign key #外键，用于限制两个表的关系，用于保证该字段的值必须来自于主表的关联列的值，在从表中添加外键约束，用于引用主表中某列的值
 ```
 
-**主键和唯一的异同**
+#### **主键和唯一的异同**
 
 |      | 保证唯一性 | 是否允许为空 | 一个表可以有几个 | 是否允许组合 |
 | :--: | :--------: | :----------: | :--------------: | :----------: |
@@ -816,7 +837,7 @@ union
 */
 ```
 
-MySQL调优
+#### MySQL调优
 
 1. 选取最适合的字段属性
 
@@ -838,9 +859,43 @@ MySQL调优
 12. 对于多张大数据量（这里几百条就算大了）的表JOIN，要先分页再JOIN，否则逻辑读会很高，性能很差
 13. 任何地方都不要使用 select * from t ，用具体的字段列表代替“*”，不要返回用不到的任何字段。
 
-**索引**
+#### 索引失效
 
+* 索引列使用函数或表达式
 
+  对索引列进行函数操作（如 `YEAR()`、`CONCAT()`、`DATE_FORMAT()`）或数学运算（如 `+`、`-`、`*`、`/`），导致索引失效。索引的B+树是基于列的原始值构建的，函数或运算会破坏索引的有序性，迫使数据库全表扫描。
+
+* 隐式类型转换
+
+  查询条件中的值与索引列的数据类型不匹配，触发隐式类型转换（如 `VARCHAR` 与 `INT` 混用）。隐式转换会导致数据库放弃索引，直接进行全表扫描
+
+*  违反最左前缀原则
+
+  联合索引未从最左列开始使用，导致索引失效。
+
+*  使用不等于操作符（`!=` 或 `<>`）
+
+  数据库无法高效定位不符合条件的行，导致全表扫描。
+
+* LIKE 以通配符开头
+
+  模糊查询时，通配符 `%` 或 `_` 出现在开头（如 `LIKE '%keyword'`）。
+
+* 范围查询后索引失效
+
+  ​	范围查询会“截断”索引的使用，后续列无法被利用。
+
+* 使用 OR 连接非索引列
+
+  数据库无法同时利用多个索引，且非索引列需全表扫描。
+
+* IS NULL 或 IS NOT NULL
+
+  `IS NULL` 的索引存储方式特殊，而 `IS NOT NULL` 无法利用索引。
+
+* 低选择性列
+
+  索引列的值重复率高（如性别字段），导致索引失效。数据库认为全表扫描比走索引更快，选择放弃索引。
 
 **范式**
 
@@ -992,6 +1047,27 @@ ${}：不是参数预编译，是直接和sql语句拼接的。可以在不需�
 
 #{}：是参与预编译的方式，参数位置都用?代替，参数是后面预编译设置进去的
 
+#### mybatis缓存
+
+**一级缓存失效的几种场景**
+
+1. 修改了查询条件
+2. sqlsession执行增删改操作会清空缓存
+
+**一级缓存和二级缓存**
+
+1. 同一条数据不会同时出现在一级缓存和二级缓存中
+2. 一级缓存关闭后，数据才会提交到二级缓存中
+3. 缓存的命中顺序是：先看二级缓存，再看一级缓存
+
+<img src="upload/image-20250721151837917.png" alt="image-20250721151837917" style="zoom:50%;" />
+
+#### mybatis的executor
+
+* SimpleExecutor：每执行一次update或者select，就开启一个statement对象，用完后立刻关闭
+* ReuseExecutor：执行 update 或 select，以 sql 作为 key 查找 Statement 对象，存在就使用，不存在就创建，用完后，不关闭 Statement 对象，而是放置于 Map<String, Statement>内，供下一次使用。简言之，就是复用预编译的 `PreparedStatement`，适合重复执行相同 SQL（如批量更新）
+* BatchEXecutor：执行 update（没有 select，JDBC 批处理不支持 select），将所有 sql 都添加到批处理中（addBatch()），等待统一执行（executeBatch()），它缓存了多个 Statement 对象，每个 Statement 对象都是 addBatch()完毕后，等待逐一执行 executeBatch()批处理。与 JDBC 批处理相同。
+
 ### HR
 
 **自我介绍**
@@ -1040,7 +1116,7 @@ ${}：不是参数预编译，是直接和sql语句拼接的。可以在不需�
 
 ### 面试专业问题
 
-#### 代码部署到服务器发现cpu被打满了怎么排查
+#### 服务器cpu被打满了怎么排查
 
 **使用 `top` 命令**
  登录服务器后执行 `top`，观察CPU使用率最高的进程（`%CPU`列）。
@@ -1068,13 +1144,17 @@ ${}：不是参数预编译，是直接和sql语句拼接的。可以在不需�
 解决方案：检查数据库、RPC调用或第三方接口的响应时间。添加超时机制或重试策略。
 ```
 
-#### 代码部署到服务器发现内存被打满了怎么排查
+#### 服务器内存被打满了怎么排查
 
-使用 `free` 命令查看内存状态
+查看错误信息及日志
 
-使用 `vmstat` 命令查看内存和交换分区动态
+查看 JVM 参数配置
 
- 使用 `top` 或 `htop` 实时监控进程内存
+```
+jinfo <PID>  # 查看当前进程的 JVM 参数
+```
+
+ 使用 `top` 实时监控进程内存
 
 ```
 top -o %MEM  # 按内存使用率排序
@@ -1097,7 +1177,7 @@ pmap -x <PID>  # 查看进程的内存映射
 - (1) 应用层问题
 
 - 1. **内存泄漏**
-     - **现象**：堆内存（heap）持续增长，最终耗尽物理内存。
+     - **现象**：堆内存（heap）持续增长，最终耗尽物理内存。元空间溢出，类加载过多
      - 排查方法：对于 Java 应用：使用 `jstat -gc <PID>` 查看堆内存变化，或通过 `jmap` 生成堆转储文件分析。
   2. **缓存失控**
      - **现象**：缓存数据未设置过期时间，导致内存被占满。
@@ -1459,3 +1539,56 @@ public static void run(Class<?> primaryClass) {
 <img src="upload/image-20250718150531923.png" alt="image-20250718150531923" style="zoom:50%;" />
 
 #### arthas热部署原理
+
+#### 死锁
+
+1. 互斥：某种资源一次只允许一个进程访问。
+2. 占有且等待：指一个进程已经占有了一些资源，同时又在等待其他资源的释放。
+3. 不可抢占：已经分配给某个进程的资源在未使用完毕之前，不能被其他进程强行剥夺。只有持有该资源的进程才能释放它。
+4. 循环等待：存在一个进程链，其中每个进程都占有下一个进程所需的至少一种资源。
+
+可以用jstack <进程ID>查看死锁情况
+
+```java
+public class DeadLock2 {
+    public static void main(String[] args) {
+        Object o1 = new Object();
+        Object o2 = new Object();
+        new Thread(() -> {
+            synchronized (o1) {
+                System.out.println(Thread.currentThread().getName() + " get 01");
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                synchronized (o2) {
+                    System.out.println(Thread.currentThread().getName() + " get o2");
+                }
+            }
+        }).start();
+        new Thread(() -> {
+            synchronized (o2) {
+                System.out.println(Thread.currentThread().getName() + " get o2");
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                synchronized (o1) {
+                    System.out.println(Thread.currentThread().getName() + " get o1");
+                }
+            }
+        }).start();
+    }
+}
+```
+
+#### 进程和线程的区别
+
+- **进程：** **程序的一次执行实例**。它是一个独立的、自包含的执行环境，拥有**独立的地址空间（内存空间）**、代码、数据、堆栈、文件描述符、环境变量、安全属性（如用户ID、组ID）以及至少一个线程。操作系统为每个进程分配和管理这些资源。
+- **线程：** **进程内的一个执行流**。它是CPU调度的基本单位。**同一个进程内的所有线程共享该进程的地址空间和系统资源**（如打开的文件、内存）。每个线程拥有自己独立的程序计数器、寄存器集合和栈（用于存储局部变量和函数调用链）。
+- **进程：** 高度独立。一个进程崩溃或终止通常不会直接影响其他进程（除非它们通过IPC机制紧密耦合）。
+- **线程：** 相互依赖。同一个进程内的线程共享内存空间。一个线程崩溃（如访问非法内存地址）很可能导致整个进程崩溃，进而影响该进程内的所有其他线程。
+
+进程是一个运行态程序的实例，他有自己的地址空间，是操作系统进行资源分配的基本单位。线程是处理器进行任务调度和执行的基本党委。一个进程至少包含一个线程。同一进程的多个线程共享共享进程的地址空间。jvm里的栈区、程序计数器是线程级的，堆、元空间是进程级的
